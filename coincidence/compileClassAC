@@ -1,0 +1,2 @@
+#!/bin/bash
+g++ autocorrelation_EEEcnaf.C  -L/usr/lib64/root -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lMathCore -lThread -pthread -lm -ldl -rdynamic -I/usr/include/root -o analisiACAtCnaf.exe
