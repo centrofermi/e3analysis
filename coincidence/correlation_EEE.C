@@ -61,6 +61,11 @@ void correlation_EEE(Double_t DiffCut = 0.1)
 	config >> tmp4; // Read the third line of the config file (data path)
 	char *path = new char[tmp4.Length() + 1];
 	path = tmp4.Data();
+
+// select date
+       Int_t year,month,day;
+       sscanf(date,"%i-%i-%i",&year,&month,&day);
+
 //
 // Input files
 //
@@ -158,6 +163,7 @@ void correlation_EEE(Double_t DiffCut = 0.1)
 //	
 // loop on TTree #2 and add each entry to corresponding cell
 //
+
 	Int_t cellIndex, size;
 	for (Int_t i = 0; i < nent2; i++) {
 		t2->GetEntry(i);
@@ -177,23 +183,31 @@ void correlation_EEE(Double_t DiffCut = 0.1)
 	Int_t e1, e2;	
 	Double_t DiffTime;
 	Float_t ThetaRel;
+        treeout->Branch("year", &year, "year/I");
+        treeout->Branch("month", &month, "month/I");
+        treeout->Branch("day", &day, "day/I");
 	treeout->Branch("ctime1", &ctime1, "ctime1/D");
 	treeout->Branch("ChiSquare1", &ChiSquare1, "ChiSquare1/F");
 	treeout->Branch("TimeOfFlight1", &TimeOfFlight1, "TimeOfFlight1/F");
 	treeout->Branch("TrackLength1", &TrackLength1, "TrackLength1/F");
 	treeout->Branch("Theta1", &Theta1, "Theta1/F");
 	treeout->Branch("Phi1", &Phi1, "Phi1/F");
+        treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
+        treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
 	treeout->Branch("ctime2", &ctime2, "ctime2/D");
 	treeout->Branch("ChiSquare2", &ChiSquare2, "ChiSquare2/F");
 	treeout->Branch("TimeOfFlight2", &TimeOfFlight2, "TimeOfFlight2/F");
 	treeout->Branch("TrackLength2", &TrackLength2, "TrackLength2/F");
 	treeout->Branch("Theta2", &Theta2, "Theta2/F");
 	treeout->Branch("Phi2", &Phi2, "Phi2/F");
+        treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
+        treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
 	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
 	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
 
 
 	for(e1 = 0; e1 < nent1; e1++) {
+
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
 		// Calculate Theta1, Phi1

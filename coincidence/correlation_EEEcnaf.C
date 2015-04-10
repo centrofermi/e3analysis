@@ -122,20 +122,26 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	const char *path = new char[tmp4.Length() + 1];
 	if(! mypath) path = tmp4.Data();
         else path=mypath;
+
+// select date
+	Int_t year,month,day;
+        sscanf(date,"%i-%i-%i",&year,&month,&day);
+
+
 //
 // Input files
 //
-        system(Form("ls %s/%s/%s/*.root >lista%s_1",path,tel_code1,date,date));
-        system(Form("ls %s/%s/%s/*.root >lista%s_2",path,tel_code2,date,date));
+        system(Form("ls %s/%s/%s/*.root >lista%s%s_1",path,tel_code1,date,tel_code1,date));
+        system(Form("ls %s/%s/%s/*.root >lista%s%s_2",path,tel_code2,date,tel_code2,date));
 
         TChain *t1 = new TChain("Events");
-        FILE *f1 = fopen(Form("lista%s_1",date),"r");
+        FILE *f1 = fopen(Form("lista%s%s_1",tel_code1,date),"r");
         char filename[300];
         while(fscanf(f1,"%s",filename)==1) t1->Add(filename);
         fclose(f1);
 
         TChain *t2 = new TChain("Events");
-        FILE *f2 = fopen(Form("lista%s_2",date),"r");
+        FILE *f2 = fopen(Form("lista%s%s_2",tel_code2,date),"r");
         while(fscanf(f2,"%s",filename)==1) t2->Add(filename);
         fclose(f2);
 
@@ -259,18 +265,25 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Int_t e1, e2;	
 	Double_t DiffTime;
 	Float_t ThetaRel;
+        treeout->Branch("year", &year, "year/I");
+        treeout->Branch("month", &month, "month/I");
+        treeout->Branch("day", &day, "day/I");
 	treeout->Branch("ctime1", &ctime1, "ctime1/D");
 	treeout->Branch("ChiSquare1", &ChiSquare1, "ChiSquare1/F");
 	treeout->Branch("TimeOfFlight1", &TimeOfFlight1, "TimeOfFlight1/F");
 	treeout->Branch("TrackLength1", &TrackLength1, "TrackLength1/F");
 	treeout->Branch("Theta1", &Theta1, "Theta1/F");
 	treeout->Branch("Phi1", &Phi1, "Phi1/F");
+        treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
+        treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
 	treeout->Branch("ctime2", &ctime2, "ctime2/D");
 	treeout->Branch("ChiSquare2", &ChiSquare2, "ChiSquare2/F");
 	treeout->Branch("TimeOfFlight2", &TimeOfFlight2, "TimeOfFlight2/F");
 	treeout->Branch("TrackLength2", &TrackLength2, "TrackLength2/F");
 	treeout->Branch("Theta2", &Theta2, "Theta2/F");
 	treeout->Branch("Phi2", &Phi2, "Phi2/F");
+        treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
+        treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
 	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
 	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
 
