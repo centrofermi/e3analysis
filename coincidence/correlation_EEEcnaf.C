@@ -228,6 +228,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         Int_t i2 = 0; StatusCode2=1;
 	while(StatusCode2) {t2->GetEntry(        i2); ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; t2min = ctime2;i2++;}
         cout << "start " << Seconds2 << endl;
+        if(startTime > Seconds2) startTime = Seconds2;
         i2 = nent2 - 1; StatusCode2=1;
 	while(StatusCode2) {t2->GetEntry(i2); ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; t2max = ctime2;i2--;}
         cout << "end " << Seconds2 << endl;
