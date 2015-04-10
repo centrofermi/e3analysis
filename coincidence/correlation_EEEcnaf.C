@@ -30,19 +30,62 @@
 #include <TChain.h>
 #include "TRandom.h"
 
+bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,Double_t DiffCut = 0.1);
+void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,Double_t DiffCut = 0.1);
 
 int main(int argc,char *argv[]){
 
-  if(argc>1){
-     correlation_EEE(argv[1]);
+  char *date = NULL;
+  char *sc1 = NULL;
+  char *sc2 = NULL;
+  char *path = NULL;
+
+  printf("list of options to overwrite the config file infos:\n");
+  printf("-d DATE = to pass the date from line command\n");
+  printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
+  printf("-p PATH = to pass the path of the reco dirs");
+
+  for(Int_t i=1;i < argc;i++){
+    if(CfrString(argv[i],"-d")){
+      if(i+1 > argc){
+        printf("date is missing\n");
+	return 1;
+      }
+       
+      date = argv[i+1];
+      i++;
+    }
+    if(CfrString(argv[i],"-s")){                       
+      if(i+2 > argc){
+        printf("Two schools name have to be provided\n");
+        return 2;
+      }
+ 
+      sc1 = argv[i+1];
+      sc2 = argv[i+2];
+
+      i+=2;
+   }
+   if(CfrString(argv[i],"-p")){
+      if(i+1 > argc){
+        printf("path is missing\n");
+        return 1;
+      }
+
+      path = argv[i+1];
+      i++;  
+    }
+
   }
 
+  correlation_EEE(date,sc1,sc2,path);
+
+  return 0;
 }
 
 
-void correlation_EEE(const char *mydata,Double_t DiffCut)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,Double_t DiffCut)
 {
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
@@ -65,17 +108,20 @@ void correlation_EEE(const char *mydata,Double_t DiffCut)
 	TString tmp1, tmp2, tmp3, tmp4;
 	config >> tmp1; // Read the first line of the config file (telescope code 1)
 	const char *tel_code1 = new char[tmp1.Length() + 1];
-	tel_code1 = tmp1.Data();
+	if(! mysc1) tel_code1 = tmp1.Data();
+	else tel_code1 = mysc1;
 	config >> tmp2; // Read the first line of the config file (telescope code 2)
 	const char *tel_code2 = new char[tmp2.Length() + 1];
-	tel_code2 = tmp2.Data();
+	if(! mysc2) tel_code2 = tmp2.Data();
+        else tel_code2 = mysc2;
 	config >> tmp3; // Read the second line of the config file (date)
 	const char *date = new char[tmp3.Length() + 1];
 	if(! mydata) date = tmp3.Data();
         else date=mydata;
 	config >> tmp4; // Read the third line of the config file (data path)
 	const char *path = new char[tmp4.Length() + 1];
-	path = tmp4.Data();
+	if(! mypath) path = tmp4.Data();
+        else path=mypath;
 //
 // Input files
 //
@@ -285,3 +331,14 @@ void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Flo
 	if(phi>360.) phi=phi-360.0;
 
 }
+
+bool CfrString(const char *str1,const char *str2){
+  int n=0;
+
+  while(str1[n] == str2[n] && str1[n] != '\0'  && str2[n] != '\0' && n < 100){
+    n++;
+  }
+
+  return (str1[n] == str2[n]);
+}
+

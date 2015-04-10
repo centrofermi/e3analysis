@@ -1,0 +1,34 @@
+Macro to perform coincidences studies (Catania code: F. Riggi and P. La Rocca)
+
+Input: a daily DST file for two telescopes
+Ouput: a ROOT file with a TREE
+
+config_correlation_EEE.txt
+contains the setting:
+
+ Telescope 1
+ Telescope 2
+ date
+ $path where the input files are suppose to be ($path/$Telescope/date/*_dst.root)
+
+The macro can be simply run in this way
+root correlation_EEE.C
+
+Alternativelly, if you are running at CNAF, you can compile the macro which automatically run on all the runs of a day
+To compile run:
+./compileClass
+or
+compileClass3
+for tripple coincidences (config file should be as config_correlation_EEE3.txt)
+
+Once compiled you can run
+./analisiCoincAtCnaf.exe -d 2015-04-03 -s BOLO-01 BOLO-03 -p /recon
+[add the info you want to pass from command line using option: -d (date), -s (2 schools) or -p (path)]
+or
+./analisiCoincAtCnaf3.exe 2015-03-12
+[add the date if you want to replace the one in the config file, to be replaced as in the two coindicences case]
+
+
+
+Also macro for autocorrelation was added to perform analysis in a single telescope looking at correlation of different triggered events.
+The same config file as for the two coindences studies should be used
