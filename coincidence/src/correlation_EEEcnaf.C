@@ -29,8 +29,6 @@
 #include <TArrayI.h>
 #include <TChain.h>
 #include "TRandom.h"
-#include <TH1I.h>
-#include <TH1F.h>
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
@@ -95,18 +93,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //
 // Data are read from the two ROOT trees created for each telescope
 //
-
-   TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
-   TH1I *hexposure2 = new TH1I("hexposure2","Active run number in a given second;second - time_first_event;run number telescope 2",100000,0,100000);
-
-   TH1I *htimePerRun1 = new TH1I("htimePerRun1","time duration of the run for telescope 1;run number;duration (s)",200,0,200);
-   TH1I *htimePerRun2 = new TH1I("htimePerRun2","time duration of the run for telescope 2;run number;duration (s)",200,0,200);
-
-   TH1F *hEventPerRun1 = new TH1F("hEventPerRun1","Rate of events with hits per Run telescope 1;Run number;Rate of events (Hz)",200,0,200);
-   TH1F *hEventPerRun2 = new TH1F("hEventPerRun2","Rate of events with hits per Run telescope 2;Run number;Rate of events (Hz)",200,0,200);
-
-   TH1F *hGoodTrackPerRun1 = new TH1F("hGoodTrackPerRun1","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 1;Run number;Fraction of Good Tracks",200,0,200);
-   TH1F *hGoodTrackPerRun2 = new TH1F("hGoodTrackPerRun2","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 2;Run number;Fraction of Good Tracks",200,0,200);
 
 //
 // Open and read the configuration file
@@ -212,16 +198,10 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //      
 // Find time range
 //
-
-        Double_t startTime;
-
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
         Int_t i1 = 0;StatusCode1=1;
         while(StatusCode1) {t1->GetEntry(        i1); ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09; t1min = ctime1;i1++;}
-        cout << "start " << Seconds1 << endl;        
-
-        startTime = Seconds1;
-
+        cout << "start " << Seconds1 << endl;
         i1 = nent1 - 5; StatusCode1=1;	
         while(StatusCode1) {t1->GetEntry( i1); ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09; t1max = ctime1;i1--;}
         cout << "end " << Seconds1 << " " << StatusCode1 << endl;
@@ -241,42 +221,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Double_t tmin = TMath::Min(t1min, t2min);
 	Double_t tmax = TMath::Max(t1max, t2max);
 	cout << "Common measure time interval = "<<(TMath::Min(t1max, t2max)-TMath::Max(t1min, t2min))<< " s"<<endl;
-
-// collect info on run duration and rate
-       for(Int_t e1 = 0; e1 < nent1; e1++) {
-                t1->GetEntry(e1);
-                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
-
-                if(StatusCode1==0){
-                    hEventPerRun1->Fill(RunNumber1); 
-                    if(ChiSquare1 < 10) hGoodTrackPerRun1->Fill(RunNumber1);
-                }
-       }
-       hGoodTrackPerRun1->Divide(hEventPerRun1);
-
-       for(Int_t e2 = 0; e2 < nent2; e2++) {
-                t2->GetEntry(e2);
-                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
-
-                if(StatusCode2==0){
-                    hEventPerRun2->Fill(RunNumber2);    
-                    if(ChiSquare2 < 10) hGoodTrackPerRun2->Fill(RunNumber2);
-                }
-       }
-       hGoodTrackPerRun2->Divide(hEventPerRun2);
-
-       for(Int_t i=1;i<100000;i++){
-         if(hexposure1->GetBinContent(i) > 0)
-            htimePerRun1->Fill(hexposure1->GetBinContent(i));
-   
-         if(hexposure2->GetBinContent(i) > 0)
-            htimePerRun2->Fill(hexposure2->GetBinContent(i));
-
-       }
-
-       hEventPerRun1->Divide(htimePerRun1);
-       hEventPerRun2->Divide(htimePerRun2);
-
 //
 // Chain mesh: define starting time cell for both trees
 //
@@ -317,81 +261,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //
 	TFile *fileout = new TFile(Form("%s/%s-%s-%s.root",".",tel_code1,tel_code2,date), "RECREATE");
         fileout->ls();
-
-	// fill tree with quality check per run
-	Float_t ratePerRun,FractionGoodTrack;
-        Int_t timeduration,runnumber,runnumber2;
-
-        TTree *treeTel1 = new TTree("treeTel1", "run information of telescope 1");
-        treeTel1->Branch("year", &year, "year/I");
-        treeTel1->Branch("month", &month, "month/I");
-        treeTel1->Branch("day", &day, "day/I");
-        treeTel1->Branch("run", &runnumber, "run/I");
-        treeTel1->Branch("timeduration",&timeduration,"timeduration/I");
-        treeTel1->Branch("ratePerRun",&ratePerRun,"ratePerRun/F");
-        treeTel1->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
-
-        TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
-        treeTel2->Branch("year", &year, "year/I");
-        treeTel2->Branch("month", &month, "month/I");
-        treeTel2->Branch("day", &day, "day/I");
-        treeTel2->Branch("run", &runnumber, "run/I");
-        treeTel2->Branch("timeduration",&timeduration,"timeduration/I");
-        treeTel2->Branch("ratePerRun",&ratePerRun,"ratePerRun/F");
-        treeTel2->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
-
-        TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
-        treeTimeCommon->Branch("year", &year, "year/I");
-        treeTimeCommon->Branch("month", &month, "month/I");
-        treeTimeCommon->Branch("day", &day, "day/I");
-        treeTimeCommon->Branch("run", &runnumber, "run/I");
-        treeTimeCommon->Branch("run2", &runnumber2, "run2/I");
-        treeTimeCommon->Branch("timeduration",&timeduration,"timeduration/I");
-
-        // Fill the infos
-        for(Int_t i=1;i<=200;i++){
-            if(htimePerRun1->GetBinContent(i) > 0){
-                runnumber = i-1;
-                timeduration = htimePerRun1->GetBinContent(i);
-                ratePerRun = hEventPerRun1->GetBinContent(i);
-                FractionGoodTrack = hGoodTrackPerRun1->GetBinContent(i);
-                treeTel1->Fill();
-            }
-            if(htimePerRun2->GetBinContent(i) > 0){
-                runnumber = i-1;
-                timeduration = htimePerRun2->GetBinContent(i);
-                ratePerRun = hEventPerRun2->GetBinContent(i);
-                FractionGoodTrack = hGoodTrackPerRun2->GetBinContent(i);
-                treeTel2->Fill();
-            }
-        }
-
-        Int_t noverlap[200][200];
-        for(Int_t is=0;is < 200;is++)
-          for(Int_t js=0;js < 200;js++)
-            noverlap[is][js]=0;
-
-
-        // count overlapping seconds
-        for(Int_t is=1;is<100000;is++){
-          if(hexposure1->GetBinContent(is) > 0 && hexposure2->GetBinContent(is) > 0)
-            noverlap[Int_t(hexposure1->GetBinContent(is))][Int_t(hexposure2->GetBinContent(is))]++;
-        }
-
-
-
-        for(Int_t i=1;i<200;i++){
-              for(Int_t j=1;j<200;j++){
-                if(noverlap[i][j]){
-                  runnumber = i;
-                  runnumber2 = j;
-                  timeduration = noverlap[i][j];
-                  treeTimeCommon->Fill();
-                }      
-              }
-        }
-        
-
 	TTree *treeout = new TTree("tree", "Delta T");
 	Int_t e1, e2;	
 	Double_t DiffTime;
@@ -453,9 +322,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	cout << endl;
 	fileout->cd();
 	treeout->Write();
-        treeTel1->Write();
-        treeTel2->Write();
-        treeTimeCommon->Write();
 	fileout->Close();
 	cout<<"Correlation tree completed"<<endl;
 	
