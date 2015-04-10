@@ -125,7 +125,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 // select date
 	Int_t year,month,day;
-        sscanf(date,"%i-%i-%i",&year,&month,&day);
+        sscanf(date,"%d-%d-%d",&year,&month,&day);
 
 
 //

@@ -64,7 +64,7 @@ void correlation_EEE(Double_t DiffCut = 0.1)
 
 // select date
        Int_t year,month,day;
-       sscanf(date,"%i-%i-%i",&year,&month,&day);
+       sscanf(date,"%d-%d-%d",&year,&month,&day);
 
 //
 // Input files
