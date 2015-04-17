@@ -11,10 +11,8 @@ LIBDIR 		:= $(MAINDIR)/lib
 
 INCLUDES     	:= $(wildcard $(INCDIR)/*.h)                          
 SOURCES      	:= $(wildcard $(SRCDIR)/*.C)
-#SOURCES      	+= $(wildcard $(SRCDIR)/*.cxx)
 CSOURCES      	:= $(wildcard $(SRCDIR)/*.c)
 OBJECTS	     	+= $(SOURCES:$(SRCDIR)/%.C=$(BINDIR)/%.o)
-#OBJECTS	 	+= $(SOURCES:$(SRCDIR)/%.cxx=$(BINDIR)/%.o)
 OBJECTS	     	+= $(CSOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
 
 #LINKDEFS	:= THealpixMap TVMap

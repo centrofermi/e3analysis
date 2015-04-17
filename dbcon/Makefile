@@ -1,24 +1,19 @@
 
 include ./Makefile.inc
 
-TARGET		:= ltcube.exe
+TARGET		:= dbcon_test.exe
 
 MAINDIR		:= $(shell pwd)
-INCDIR		:= $(MAINDIR)/inc
+INCDIR			:= $(MAINDIR)/inc
 SRCDIR		:= $(MAINDIR)/src
-BINDIR 		:= $(MAINDIR)/bin
-LIBDIR 		:= $(MAINDIR)/lib
+BINDIR 			:= $(MAINDIR)/bin
+LIBDIR	 		:= $(MAINDIR)/lib
 
 INCLUDES     	:= $(wildcard $(INCDIR)/*.h)                          
 SOURCES      	:= $(wildcard $(SRCDIR)/*.cpp)
-#SOURCES      	+= $(wildcard $(SRCDIR)/*.cxx)
 CSOURCES      	:= $(wildcard $(SRCDIR)/*.c)
 OBJECTS	     	+= $(SOURCES:$(SRCDIR)/%.cpp=$(BINDIR)/%.o)
-#OBJECTS	 	+= $(SOURCES:$(SRCDIR)/%.cxx=$(BINDIR)/%.o)
 OBJECTS	     	+= $(CSOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
-AMSLIBS		:= $(AMSWD)/lib/$(shell root-config --arch)/ntuple_slc4_PG.so  
-
-LINKDEFS	:= THealpixMap TVMap
 
 #-------------------------------------------------
 # primary targets
@@ -28,9 +23,9 @@ LINKDEFS	:= THealpixMap TVMap
 
 exec: $(TARGET)
 
-$(TARGET): $(OBJECTS) $(AMSLIBS)
+$(TARGET): $(OBJECTS)
 	@echo "Creating executable file $@"
-	@$(LD) $(LDFLAGS) -D_PGTRACK_ $^ -o $@  $(COMMLIBS) $(ROOTLIBS) 
+	@$(LD) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(ROOTLIBS) 
 clean:
 	@echo "Cleaning up ..."
 	@$(DEL) $(MAINDIR)/$(TARGET) \
@@ -42,20 +37,16 @@ clean:
 
 $(BINDIR)/%.o : $(SRCDIR)/%.cpp; 
 	@echo "Compiling $< ... "
-	@$(CXX) $(CXXFLAGS) -I$(INCDIR) -I$(INCHEALDIR) -I$(AMSWD)/include -D_PGTRACK_ -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
 
 $(BINDIR)/%.o : $(SRCDIR)/%.c; 
 	@echo "Compiling $< ..."
 	@$(C) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
 
-$(BINDIR)/%.o : $(SRCDIR)/%.f; 
-	@echo "Compiling $< ..."
-	@$(FC) $(FCFLAGS) -c $< -o $@
-
 $(BINDIR)/%.d : $(SRCDIR)/%.cpp; 
 	@echo "Making dependencies for file $< ..."
 	@set -e;\
-	$(CXX) -MM $(CXXFLAGS) -I$(INCDIR) -I$(INCHEALDIR) -I$(AMSWD)/include -D_PGTRACK_ -w $< | \
+	$(CXX) -MM $(CXXFLAGS) -I$(INCDIR) -w $< | \
 	sed 's!$*\.o!$(BINDIR)& $@!' >$@;\
 	[ -s $@ ] || rm -f $@		
 

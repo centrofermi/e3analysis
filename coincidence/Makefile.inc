@@ -14,7 +14,7 @@
 #-------------------------------------------------
 # specify OS target, which further differentiates
 # the underlying OS; supported values are:
-# macosx64, linux
+# linux
 #-------------------------------------------------
 
 ifndef TARGETOS
@@ -70,9 +70,9 @@ DEL = rm -rf
 
 ROOTCFLAGS       := $(shell root-config --cflags)
 ROOTLDFLAGS     := $(shell root-config --ldflags)
-alllibs        	   	   := $(shell root-config --libs) -lMinuit -lTreePlayer
+allROOTLIBS 	    := $(shell root-config --libs) -lMinuit -lTreePlayer
 misslibs 		   = -lPhysics
-ROOTLIBS  		   = $(filter-out $(misslibs),$(alllibs))
+ROOTLIBS  		   = $(filter-out $(misslibs),$(allROOTLIBS))
 ROOTGRAPHICSLIBS := -lGui -lGeom -lGeomPainter -lHistPainter
 ROOTGLIBS     	 := $(shell root-config --glibs) -lGpad -lGX11 -lX3d -lGeom -lGeomPainter -lHistPainter
 
