@@ -21,12 +21,12 @@ Int_t hitevents[2] = {10000,10000};
 Float_t fracGT[2] = {0.9,0.9};
 Float_t rateMin[2] = {30,30};
 Float_t rateMax[2] = {60,60};
+Float_t minmissingHitFrac[2] = {0,0};
+Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
 Float_t maxthetarel = 30;
-Float_t minmissingHitFrac[2] = {0,0};
-Float_t maxmissingHitFrac[2] = {1,1};
 
 
 // telescope settings
