@@ -9,7 +9,8 @@
 #include <climits> //for INT_MAX
 #include <map>
 
-//#define LOCALFUN
+#include <my_global.h>
+#include <mysql.h>
 
 using namespace std;
 
@@ -21,6 +22,12 @@ using namespace std;
 
 */
 class e3RunDbConn{
+
+ private:
+
+  MYSQL *_mysqlCon;
+
+  void finish_with_error();
 
  protected:
 
@@ -38,46 +45,21 @@ class e3RunDbConn{
   */
   ~e3RunDbConn(){};
 
-/*   //! Init member function */
-/*   /\*! */
-/*     Correctly initialize the simulated AMSEventR loading the first entry of an AMS ROOT file */
-/*     Default root fil is used. */
+  //! Init mysql structure and open a db connection according to the db parameters
+  /*!
 
-/*    *\/ */
-/*   void Init(); */
+    Correctly initialize the mysql connection.
 
-/*   //! Init member function */
-/*   /\*! */
-/*     Correctly initialize the simulated AMSEventR loading the first entry of an AMS ROOT file */
-    
-/*     \param rootfile_name the full path of the AMS ROOT file to be loaded */
-/*    *\/ */
-/*   void Init(string rootfile_name); */
+   */
+  void Init();
 
-/*   //! RstEventTime member function */
-/*   /\*! */
-/*     unix time + usec time */
-/*    *\/ */
-/*   inline void RstEventTime(){ _HeaderR->Time[0]=0; _HeaderR->Time[1]=0; } */
+  //! Close db connection and free MYSQL structure
+  /*!
 
-/*   //! SetEventTime member function */
-/*   /\*! */
-/*     unix time + usec time */
-/*    *\/ */
-/*   inline void SetEventTime(unsigned int time0, unsigned int time1){ _HeaderR->Time[0]=time0; _HeaderR->Time[1]=time1; } */
+    Correctly close the mysql connection.
 
-/*   //! IncEventTime member function */
-/*   /\*! */
-/*     unix time + usec time */
-/*    *\/ */
-/*   inline void IncEventTime(unsigned int time0, unsigned int time1){ _HeaderR->Time[0]+=time0; _HeaderR->Time[1]+=time1; } */
-
-/*   //! GetJMDCEventTime member function */
-/*   /\*! */
-/*     \return unix time + usec time */
-/*    *\/ */
-/*   inline double JMDCEventTime(){ return (double) (_HeaderR->Time[0]+_HeaderR->Time[1]/1.e6); } */
-
+   */
+  void CloseConn();
 
 /*   //! CheckNewRun member function */
 /*   /\*! */

@@ -7,156 +7,51 @@
 
 #include "e3RunDbConn.h"
 
-// extern "C" int ISSLoad(const char *name, const char *line1, const char *line2);
-// extern "C" int ISSGTOD(float *r,float *t,float *p, float *v, float *vt, float *vp, float *grmedphi, double time);
-// extern "C" int ISSECI(double *x, double *y, double *z, double *vx, double *vy, double *vz, double time);
+//! finish_with_error function.
+/*!
+  Return error, close db connection and exit
 
-// //! MemCpyISS2LE function.
-// /*!
+  \param MYSQL C api connection
+ */
+void e3RunDbConn::finish_with_error()
+{
 
-// Store ISS 2LE data in the AMSSetupR::fISSData map (time, AMSSetupR::ISSData) for
-// the time interval between t1 and t2.
+  cerr<<"[- ERROR ] "<<mysql_error(_mysqlCon)<<endl;
+  mysql_close(_mysqlCon);
+  exit(1);        
 
-// \param setup AMSSetupR object containing the fISSData map 
-// \param t1 time interval lower limit, UTC time
-// \param t2 time interval upper limit, UTC time
-
-// Copied From gbatch: .... method.
-
-// */
-// void MemCpyISS2LE(AMSSetupR *setup, unsigned int t1, unsigned int t2){
-
-//   char amsdatadir[]="/afs/cern.ch/ams/Offline/AMSDataDir";
-//   char *amsd=getenv("AMSDataDir");
-//   if(!amsd || !strlen(amsd))amsd=amsdatadir;
-//   string ifile=amsd;
-//   ifile+="/v5.00";   //<--- Messo a mano!!!!
-//   ifile+="/ISS_tlefile.txt";
-//   ifstream ifbin;
-//   ifbin.clear();
-//   ifbin.open(ifile.c_str());
-  
-//   if(ifbin){
-    
-//     char stime[80],namei[80], line1i[80], line2i[80];
-//     while(!ifbin.eof()){
-//       namei[0]=0;
-//       line1i[0]=0;
-//       line2i[0]=0;
-//       stime[0]=0;
-//       unsigned int tme;
-//       ifbin.getline(stime,75);
-//       tme=atol(stime);
-//       ifbin.getline(namei,75);
-//       ifbin.getline(line1i,75);
-//       ifbin.getline(line2i,75);
-//       if(!ifbin.eof() ){
-// 	AMSSetupR::ISSData a;
-//  	a.TL1=line1i;
-//  	a.TL2=line2i;
-//  	a.Name=namei;
-//  	if(tme<t1)setup->fISSData.clear();
-//  	setup->fISSData.insert(make_pair(tme,a));
-// 	if(tme>t2)break;
-//       }
-//     }
-//     ifbin.close();
-
-//     cout<<"[MemCpyISS2LE - INFO] 2LE DATA copied in memory from file: "<<ifile.c_str()<<endl; 
-
-//   }
-// }
-
-// //! LoadISS2LE function.
-// /*!
-
-// Copied From gbatch: AMSNtuple::LoadISS method
-
-// */
-// bool LoadISS2LE(AMSSetupR *setup, time_t xtime){
-
-//   static unsigned int time=0;
-//   unsigned int tl=0;
-
-//   if(setup && setup->fISSData.size()>0){
-//     for(AMSSetupR::ISSData_i i=setup->fISSData.begin();i!=setup->fISSData.end();i++){
-//       if(fabs(i->first-xtime)<fabs(tl-xtime))tl=i->first;
-//     }
-//     if(tl!=time && tl){
-//       time=tl;
-//       AMSSetupR::ISSData_i i=setup->fISSData.find(time);
-//       if(i!=setup->fISSData.end() && ISSLoad((const char *)i->second.Name,(const char *)i->second.TL1,(const char*)i->second.TL2)){
-// 	cout<<"[LoadISS2LE - INFO] Loading a new set of 2LE data"<<endl;
-// 	return true;
-//       }
-//       else{
-// 	static int print=0;
-// 	time=0;
-// 	if(print++<100)cerr<<"[LoadISS2LE - ERROR] Unable to load "<<i->second.Name<<" "<<i->first<<endl;
-// 	return false ;
-//       }
-//     }
-//     return time!=0;
-    
-//   }
-//   else{
-//     static int print=0;
-//     if(print++<100)cerr<<"[LoadISS2LE - ERROR] No Setup Found or ISSData Empty "<<setup<<endl;
-//     return false;
-//   }
-// }
+}
 
 // E3RUNDBCONN default constructor
 //------------------------------------------------------------
 e3RunDbConn::e3RunDbConn(){
 
-  // _AMSChain = NULL;
-  // _AMSEvR = NULL;
-  // _AMSSetupR = NULL;
-  // _HeaderR = NULL;
+  _mysqlCon = NULL;
 
   // _vlevel = 0;
-  // _rootfile_name = "./data/amsevent.root";
 
 }
 
-// // SAMSEventR Init member function
-// //------------------------------------------------------------
-// void SAMSEventR::Init(string rootfile_name){
+// e3RunDbConn Init member function
+//------------------------------------------------------------
+void e3RunDbConn::Init(){
 
-//   if(!rootfile_name.empty()) _rootfile_name = rootfile_name;
-//   Init();
-// }
+    MYSQL *con = mysql_init(NULL);
+    if (con == NULL) 
+      {
+	cerr<<"[]e3RunDbConn::Init - ERROR] "<<mysql_error(con)<<endl;
+	exit(1);
+      }
 
-// // SAMSEventR Init member function
-// //------------------------------------------------------------
-// void SAMSEventR::Init(){
+}
 
-//   _AMSChain = new AMSChain();
-//   _AMSChain->Add(_rootfile_name.c_str());
+// e3RunDbConn CloseConn member function
+//------------------------------------------------------------
+void e3RunDbConn::CloseConn(){
 
-//   int nentries=_AMSChain->GetEntries();
+  mysql_close(_mysqlCon);
 
-//   _AMSEvR=(AMSEventR *)_AMSChain->GetEvent();
-//   if(_AMSEvR){ if(_vlevel>=1) cout<<"[SAMSEventR::Init - INFO] AMS event loaded ./data/amsevent.root file. AMSEventR Class correctly initialized."<<endl; }
-//   else{
-//     cerr<<"[SAMSEventR::Init - ERROR] AMS ROOT file "<<_rootfile_name<<" is missing or no AMSEventR inside."<<endl;
-//     exit(EXIT_FAILURE);
-//   }
-
-//   _HeaderR = &(_AMSEvR->fHeader);
-//   RstEventTime();
-//   _HeaderR->Run=0;
-
-//   _AMSSetupR = _AMSEvR->getsetup();
-//   if(!_AMSSetupR){
-//     cerr<<"[SAMSEventR::Init - ERROR] AMSEventR setup is not correctly initialized."<<endl;
-//     exit(EXIT_FAILURE);
-//   }
-//   _AMSSetupR->fHeader.FEvent = 0;
-//   _AMSSetupR->fHeader.LEvent = 0;
-
-// }
+}
 
 // // SAMSEventR GetRunID member function
 // //------------------------------------------------------------

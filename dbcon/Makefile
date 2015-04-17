@@ -25,7 +25,7 @@ exec: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	@echo "Creating executable file $@"
-	@$(LD) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(ROOTLIBS) 
+	@$(LD) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(ROOTLIBS) $(MYSQLLIBS)
 clean:
 	@echo "Cleaning up ..."
 	@$(DEL) $(MAINDIR)/$(TARGET) \

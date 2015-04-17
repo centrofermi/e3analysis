@@ -76,13 +76,10 @@ ROOTLIBS  		   = $(filter-out $(misslibs),$(allROOTLIBS))
 #ROOTGRAPHICSLIBS := -lGui -lGeom -lGeomPainter -lHistPainter
 ROOTGLIBS     	 := $(shell root-config --glibs) -lGpad -lGX11 -lX3d -lGeom -lGeomPainter -lHistPainter
 
-#-------------------------------------------------
-# HEALPIX FLAGS&LIBS
-#-------------------------------------------------
+CXXFLAGS += $(AMSSOFTFLAGS)
 
-HEALDIR          := ../../LIBS/Healpix_2.20a/src/cxx/generic_gcc
-INCHEALDIR       := $(HEALDIR)/include
-HEALLIBS	 := -L$(HEALDIR)/lib -lhealpix_cxx -lcxxsupport -lpsht -lc_utils -lfftpack  
+MYSQLCFLAGS	 :=$(shell mysql_config --cflags)
+MYSQLLIBS 	 :=$(shell mysql_config --libs)
 
 #-------------------------------------------------
 # platform-specific definitions
@@ -115,7 +112,7 @@ CXXFLAGS += -v
 endif
 
 CXXFLAGS += $(ROOTCFLAGS)
-CXXFLAGS += $(AMSSOFTFLAGS)
+CXXFLAGS += $(MYSQLCFLAGS)
 
 # Fortran flags
 FCFLAGS:= -O3 -fPIC -Wall
@@ -135,8 +132,3 @@ endif
 COMMLIBS := -lgfortran
 
 #-------------------------------------------------
-#-------------------------------------------------
-#AMS_NODE_LIB	:= -L$(ECMONDir)/AMSNode -lAMSNode
-
-#AMS_ROOT_LIB    := $(ECMONDir)/AMSlib/lib/ntuple_slc4_PG.so
-#AMS_ROOT_LIB   := -L$(ECMONDir)/AMSlib/lib/ -lntuple_slc4
