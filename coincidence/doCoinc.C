@@ -17,36 +17,45 @@ const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 
 // periods
-Int_t yearRange[2] = {2015,2015};
-Int_t monthRange[2] = {3,3};
+Int_t yearRange[2] = {2014,2015};
+Int_t monthRange[2] = {1,12};
 Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
 Float_t fracGT[2] = {0.9,0.9};
-Float_t rateMin[2] = {40,35};
-Float_t rateMax[2] = {50,45};
+Float_t rateMin[2] = {20,20};
+Float_t rateMax[2] = {60,60};
 Float_t minmissingHitFrac[2] = {-1,-1};
 Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 360;
 
 
-// telescope settings
-Float_t angle = -3.28164726495742798e-01;
-Float_t distance=0;//1182;
+// telescope settings (Bologna setting as example)
+Float_t angle = -2.80569863;
+Float_t distance = 96;
 
 Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
 Float_t phi1Corr = 0; // in degrees
-Float_t phi2Corr = 180; // in degrees
+Float_t phi2Corr = 0; // in degrees
 
-void doCoinc(const char *fileIn="coincLAQU-01_LAQU-02.root"){
+void doCoinc(const char *fileIn="coincBOLO-01_BOLO-04.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
+
+  // define some histos
+  TH1F *hDeltaTheta = new TH1F("hDeltaTheta","#Delta#theta below the peak (500 ns);#Delta#theta (#circ)",100,-60,60);
+  TH1F *hDeltaPhi = new TH1F("hDeltaPhi","#Delta#phi below the peak (500 ns);#Delta#phi (#circ)",200,-360,360);
+  TH1F *hDeltaThetaBack = new TH1F("hDeltaThetaBack","#Delta#theta out of the peak (> 1000 ns) - normalized;#Delta#theta (#circ)",100,-60,60);
+  TH1F *hDeltaPhiBack = new TH1F("hDeltaPhiBack","#Delta#phi out of the peak (> 1000 ns)  - normalized;#Delta#phi (#circ)",200,-360,360);
+  TH1F *hThetaRel = new TH1F("hThetaRel","#theta_{rel} below the peak (500 ns);#theta_{rel} (#circ)",100,0,120);
+  TH1F *hThetaRelBack = new TH1F("hThetaRelBack","#theta_{rel} out of the peak (> 1000 ns)  - normalized;#theta_{rel} (#circ)",100,0,120);
+
 
   TFile *f = new TFile(fileIn);
   TTree *t = (TTree *) f->Get("tree");
@@ -197,10 +206,27 @@ void doCoinc(const char *fileIn="coincLAQU-01_LAQU-02.root"){
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
     h->Fill(DeltaT-corr);
+    if(TMath::Abs(DeltaT-corr) < 500){
+      hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
+      hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
+      hThetaRel->Fill(thetarel);
+    }
+    else if(TMath::Abs(DeltaT-corr) > 1000 && TMath::Abs(DeltaT-corr) < 6000){
+      hDeltaThetaBack->Fill((Theta1-Theta2)*TMath::RadToDeg());
+      hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg());
+      hThetaRelBack->Fill(thetarel);
+    }
   }
   
   h->SetStats(0);
-  
+
+  hDeltaThetaBack->Sumw2();
+  hDeltaPhiBack->Sumw2();
+  hThetaRelBack->Sumw2();
+  hDeltaThetaBack->Scale(0.1);
+  hDeltaPhiBack->Scale(0.1);
+  hThetaRelBack->Scale(0.1);
+
   Float_t val,eval;
   TCanvas *c1=new TCanvas();
   TF1 *ff = new TF1("ff","[0]*[4]/[2]/sqrt(2*TMath::Pi())*TMath::Exp(-(x-[1])*(x-[1])*0.5/[2]/[2]) + [3]*[4]/6/[2]");
@@ -254,6 +280,12 @@ void doCoinc(const char *fileIn="coincLAQU-01_LAQU-02.root"){
 
   TFile *fo = new TFile("output.root","RECREATE");
   h->Write();
+  hDeltaTheta->Write();
+  hDeltaPhi->Write();
+  hThetaRel->Write();
+  hDeltaThetaBack->Write();
+  hDeltaPhiBack->Write();
+  hThetaRelBack->Write();
   fo->Close();
   
 }
