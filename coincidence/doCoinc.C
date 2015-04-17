@@ -25,14 +25,18 @@ Float_t rateMax[2] = {60,60};
 // thresholds for good events
 Float_t maxchisquare = 10;
 Float_t maxthetarel = 30;
+Float_t minmissingHitFrac[2] = {0,0};
+Float_t maxmissingHitFrac[2] = {1,1};
+
 
 // telescope settings
 Float_t angle = -3.28164726495742798e-01;
 Float_t distance=1182;
 
+Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes
 // extra corrections
-Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 0; // in degrees
+Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
+Float_t phi1Corr = 30; // in degrees
 Float_t phi2Corr = 0; // in degrees
 
 void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
@@ -57,6 +61,10 @@ void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
 	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]) continue; // cut on the number of event
 	if(tel[i]->GetLeaf("ratePerRun")->GetValue() < rateMin[i] || tel[i]->GetLeaf("ratePerRun")->GetValue() > rateMax[i]) continue; // cut on the rate
 	if(tel[i]->GetLeaf("run")->GetValue() > 199) continue; // run < 200
+
+	Float_t missinghitfrac = (tel[i]->GetLeaf("ratePerRun")->GetValue()-tel[i]->GetLeaf("rateHitPerRun")->GetValue()-2)/(tel[i]->GetLeaf("ratePerRun")->GetValue()-2);
+	if(missinghitfrac < minmissingHitFrac[i] || missinghitfrac > maxmissingHitFrac[i]) continue;
+
 	
 	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
 	
@@ -176,7 +184,7 @@ void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
     // extra cuts if needed
     //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
-    corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01;
+    corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
     h->Fill(DeltaT-corr);
   }
@@ -233,6 +241,10 @@ void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
   printf("n_day = %f\nn_dayGR = %f\n",nsec*1./86400,nsecGR*1./86400);
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
+
+  TFile *fo = new TFile("output.root","RECREATE");
+  h->Write();
+  fo->Close();
   
 }
 
