@@ -16,12 +16,17 @@ const Int_t nbint = 100;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 
+// periods
+Int_t yearRange[2] = {2015,2015};
+Int_t monthRange[2] = {3,3};
+Int_t dayRange[2] = {1,31};
+
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
 Float_t fracGT[2] = {0.9,0.9};
-Float_t rateMin[2] = {30,30};
-Float_t rateMax[2] = {60,60};
-Float_t minmissingHitFrac[2] = {0,0};
+Float_t rateMin[2] = {40,35};
+Float_t rateMax[2] = {50,45};
+Float_t minmissingHitFrac[2] = {-1,-1};
 Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
@@ -31,16 +36,18 @@ Float_t maxthetarel = 30;
 
 // telescope settings
 Float_t angle = -3.28164726495742798e-01;
-Float_t distance=1182;
+Float_t distance=0;//1182;
 
 Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 30; // in degrees
-Float_t phi2Corr = 0; // in degrees
+Float_t phi1Corr = 0; // in degrees
+Float_t phi2Corr = 180; // in degrees
 
-void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
-  
+void doCoinc(const char *fileIn="coincLAQU-01_LAQU-02.root"){
+  Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
+  Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
+
   TFile *f = new TFile(fileIn);
   TTree *t = (TTree *) f->Get("tree");
   
@@ -57,6 +64,9 @@ void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
     for(Int_t i=0;i < 2;i++){ // loop on telescopes
       for(Int_t j=0;j < tel[i]->GetEntries();j++){ // loop on runs
 	tel[i]->GetEvent(j);
+	Int_t aday = (tel[i]->GetLeaf("year")->GetValue()-2007) * 1000 + tel[i]->GetLeaf("month")->GetValue()*50 + tel[i]->GetLeaf("day")->GetValue();
+
+	if(aday < adayMin || aday > adayMax) continue;
 	if(tel[i]->GetLeaf("FractionGoodTrack")->GetValue() < fracGT[i]) continue; // cut on fraction of good track
 	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]) continue; // cut on the number of event
 	if(tel[i]->GetLeaf("ratePerRun")->GetValue() < rateMin[i] || tel[i]->GetLeaf("ratePerRun")->GetValue() > rateMax[i]) continue; // cut on the rate
@@ -202,7 +212,7 @@ void doCoinc(const char *fileIn="coincSAVO-01_SAVO-02.root"){
   ff->SetParameter(0,42369);
   ff->SetParameter(1,0);
   ff->SetParLimits(2,10,1000);
-  ff->SetParameter(2,280); // fix witdh if needed
+  ff->SetParameter(2,150); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,20000./nbint); // bin width
   
