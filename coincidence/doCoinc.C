@@ -67,7 +67,7 @@ void doCoinc(const char *fileIn="coincBOLO-01_BOLO-04.root"){
   TTree *telC = (TTree *) f->Get("treeTimeCommon");
   
   // quality info of runs
-  Bool_t runstatus[2][10][12][31][200]; //#telescope, year-2007, month, day, run
+  Bool_t runstatus[2][10][12][31][500]; //#telescope, year-2007, month, day, run
   
   if(tel[0] && tel[1]){
     for(Int_t i=0;i < 2;i++){ // loop on telescopes
@@ -79,7 +79,7 @@ void doCoinc(const char *fileIn="coincBOLO-01_BOLO-04.root"){
 	if(tel[i]->GetLeaf("FractionGoodTrack")->GetValue() < fracGT[i]) continue; // cut on fraction of good track
 	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]) continue; // cut on the number of event
 	if(tel[i]->GetLeaf("ratePerRun")->GetValue() < rateMin[i] || tel[i]->GetLeaf("ratePerRun")->GetValue() > rateMax[i]) continue; // cut on the rate
-	if(tel[i]->GetLeaf("run")->GetValue() > 199) continue; // run < 200
+	if(tel[i]->GetLeaf("run")->GetValue() > 499) continue; // run < 500
 
 	Float_t missinghitfrac = (tel[i]->GetLeaf("ratePerRun")->GetValue()-tel[i]->GetLeaf("rateHitPerRun")->GetValue()-2)/(tel[i]->GetLeaf("ratePerRun")->GetValue()-2);
 	if(missinghitfrac < minmissingHitFrac[i] || missinghitfrac > maxmissingHitFrac[i]) continue;
@@ -108,7 +108,7 @@ void doCoinc(const char *fileIn="coincBOLO-01_BOLO-04.root"){
       
       
       
-      if(telC->GetLeaf("run")->GetValue() > 199 || telC->GetLeaf("run2")->GetValue() > 199) continue;
+      if(telC->GetLeaf("run")->GetValue() > 499 || telC->GetLeaf("run2")->GetValue() > 499) continue;
       
       if(!runstatus[0][Int_t(telC->GetLeaf("year")->GetValue())-2007][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())]) continue;
       
@@ -136,7 +136,7 @@ void doCoinc(const char *fileIn="coincBOLO-01_BOLO-04.root"){
   for(Int_t i=0;i<n;i++){
     t->GetEvent(i);
     
-    if(t->GetLeaf("RunNumber1") && (t->GetLeaf("RunNumber1")->GetValue() > 199 || t->GetLeaf("RunNumber2")->GetValue() > 199)) continue;
+    if(t->GetLeaf("RunNumber1") && (t->GetLeaf("RunNumber1")->GetValue() > 499 || t->GetLeaf("RunNumber2")->GetValue() > 499)) continue;
   
     if(tel[0] && !runstatus[0][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())]) continue;
     
