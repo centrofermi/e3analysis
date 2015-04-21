@@ -104,17 +104,17 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
    TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
    TH1I *hexposure2 = new TH1I("hexposure2","Active run number in a given second;second - time_first_event;run number telescope 2",100000,0,100000);
 
-   TH1I *htimePerRun1 = new TH1I("htimePerRun1","time duration of the run for telescope 1;run number;duration (s)",200,0,200);
-   TH1I *htimePerRun2 = new TH1I("htimePerRun2","time duration of the run for telescope 2;run number;duration (s)",200,0,200);
+   TH1I *htimePerRun1 = new TH1I("htimePerRun1","time duration of the run for telescope 1;run number;duration (s)",500,0,500);
+   TH1I *htimePerRun2 = new TH1I("htimePerRun2","time duration of the run for telescope 2;run number;duration (s)",500,0,500);
 
-   TH1F *hAllPerRun1 = new TH1F("hAllPerRun1","Rate of all events per Run telescope 1;Run number;Rate of events (Hz)",200,0,200);
-   TH1F *hAllPerRun2 = new TH1F("hAllPerRun2","Rate of all events per Run telescope 2;Run number;Rate of events (Hz)",200,0,200);
+   TH1F *hAllPerRun1 = new TH1F("hAllPerRun1","Rate of all events per Run telescope 1;Run number;Rate of events (Hz)",500,0,500);
+   TH1F *hAllPerRun2 = new TH1F("hAllPerRun2","Rate of all events per Run telescope 2;Run number;Rate of events (Hz)",500,0,500);
 
-   TH1F *hEventPerRun1 = new TH1F("hEventPerRun1","Rate of events with hits per Run telescope 1;Run number;Rate of events (Hz)",200,0,200);
-   TH1F *hEventPerRun2 = new TH1F("hEventPerRun2","Rate of events with hits per Run telescope 2;Run number;Rate of events (Hz)",200,0,200);
+   TH1F *hEventPerRun1 = new TH1F("hEventPerRun1","Rate of events with hits per Run telescope 1;Run number;Rate of events (Hz)",500,0,500);
+   TH1F *hEventPerRun2 = new TH1F("hEventPerRun2","Rate of events with hits per Run telescope 2;Run number;Rate of events (Hz)",500,0,500);
 
-   TH1F *hGoodTrackPerRun1 = new TH1F("hGoodTrackPerRun1","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 1;Run number;Fraction of Good Tracks",200,0,200);
-   TH1F *hGoodTrackPerRun2 = new TH1F("hGoodTrackPerRun2","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 2;Run number;Fraction of Good Tracks",200,0,200);
+   TH1F *hGoodTrackPerRun1 = new TH1F("hGoodTrackPerRun1","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 1;Run number;Fraction of Good Tracks",500,0,500);
+   TH1F *hGoodTrackPerRun2 = new TH1F("hGoodTrackPerRun2","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 2;Run number;Fraction of Good Tracks",500,0,500);
 
 //
 // Open and read the configuration file
@@ -377,7 +377,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTimeCommon->Branch("timeduration",&timeduration,"timeduration/I");
 
         // Fill the infos
-        for(Int_t i=1;i<=200;i++){
+        for(Int_t i=1;i<=500;i++){
             if(htimePerRun1->GetBinContent(i) > 0){
                 runnumber = i-1;
                 timeduration = htimePerRun1->GetBinContent(i);
@@ -396,9 +396,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
             }
         }
 
-        Int_t noverlap[200][200];
-        for(Int_t is=0;is < 200;is++)
-          for(Int_t js=0;js < 200;js++)
+        Int_t noverlap[500][500];
+        for(Int_t is=0;is < 500;is++)
+          for(Int_t js=0;js < 500;js++)
             noverlap[is][js]=0;
 
 
@@ -410,8 +410,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 
 
-        for(Int_t i=1;i<200;i++){
-              for(Int_t j=1;j<200;j++){
+        for(Int_t i=1;i<500;i++){
+              for(Int_t j=1;j<500;j++){
                 if(noverlap[i][j]){
                   runnumber = i;
                   runnumber2 = j;
