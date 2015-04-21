@@ -153,6 +153,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	  if(! mypath) path = tmp4.Data();
 	  else path=mypath;
 	}
+        else{
+          tel_code1 = mysc1,tel_code2 = mysc2,date=mydata,path=mypath;  
+        }
 
 // select date
 	Int_t year,month,day;
