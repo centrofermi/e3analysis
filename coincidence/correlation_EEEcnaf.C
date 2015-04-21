@@ -34,7 +34,7 @@
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,Double_t DiffCut = 0.1);
+void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t DiffCut = 0.1);
 
 int main(int argc,char *argv[]){
 
@@ -48,6 +48,8 @@ int main(int argc,char *argv[]){
   printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
   printf("-p PATH = to pass the path of the reco dirs");
 
+  int kNoConfigFile = 0;
+
   for(Int_t i=1;i < argc;i++){
     if(CfrString(argv[i],"-d")){
       if(i+1 > argc){
@@ -57,6 +59,7 @@ int main(int argc,char *argv[]){
        
       date = argv[i+1];
       i++;
+      kNoConfigFile++;
     }
     if(CfrString(argv[i],"-s")){                       
       if(i+2 > argc){
@@ -68,6 +71,7 @@ int main(int argc,char *argv[]){
       sc2 = argv[i+2];
 
       i+=2;
+      kNoConfigFile++;
    }
    if(CfrString(argv[i],"-p")){
       if(i+1 > argc){
@@ -77,17 +81,18 @@ int main(int argc,char *argv[]){
 
       path = argv[i+1];
       i++;  
+      kNoConfigFile++;
     }
 
   }
 
-  correlation_EEE(date,sc1,sc2,path);
+  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3);
 
   return 0;
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,Double_t DiffCut)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t DiffCut)
 {
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
@@ -114,31 +119,40 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //
 // Open and read the configuration file
 //
-	ifstream config;
-	config.open("./config_correlation_EEE.txt", ios::in);
-	//Check the existence of the config file
-	if(!config.is_open()){
-		cout << "Please check the config file!" << endl;
-		return;
+
+
+        const char *tel_code1;
+	const char *tel_code2;
+	const char *date;
+	const char *path;
+
+        if(! kNoConfigFile){
+	  ifstream config;
+	  config.open("./config_correlation_EEE.txt", ios::in);
+	  //Check the existence of the config file
+	  if(!config.is_open()){
+	    cout << "Please check the config file (config_correlation_EEE.txt)!" << endl;
+	    return;
+	  }
+	  
+	  TString tmp1, tmp2, tmp3, tmp4;
+	  config >> tmp1; // Read the first line of the config file (telescope code 1)
+	  tel_code1 = new char[tmp1.Length() + 1];
+	  if(! mysc1) tel_code1 = tmp1.Data();
+	  else tel_code1 = mysc1;
+	  config >> tmp2; // Read the first line of the config file (telescope code 2)
+	  tel_code2 = new char[tmp2.Length() + 1];
+	  if(! mysc2) tel_code2 = tmp2.Data();
+	  else tel_code2 = mysc2;
+	  config >> tmp3; // Read the second line of the config file (date)
+	  date = new char[tmp3.Length() + 1];
+	  if(! mydata) date = tmp3.Data();
+	  else date=mydata;
+	  config >> tmp4; // Read the third line of the config file (data path)
+	  path = new char[tmp4.Length() + 1];
+	  if(! mypath) path = tmp4.Data();
+	  else path=mypath;
 	}
-   
-	TString tmp1, tmp2, tmp3, tmp4;
-	config >> tmp1; // Read the first line of the config file (telescope code 1)
-	const char *tel_code1 = new char[tmp1.Length() + 1];
-	if(! mysc1) tel_code1 = tmp1.Data();
-	else tel_code1 = mysc1;
-	config >> tmp2; // Read the first line of the config file (telescope code 2)
-	const char *tel_code2 = new char[tmp2.Length() + 1];
-	if(! mysc2) tel_code2 = tmp2.Data();
-        else tel_code2 = mysc2;
-	config >> tmp3; // Read the second line of the config file (date)
-	const char *date = new char[tmp3.Length() + 1];
-	if(! mydata) date = tmp3.Data();
-        else date=mydata;
-	config >> tmp4; // Read the third line of the config file (data path)
-	const char *path = new char[tmp4.Length() + 1];
-	if(! mypath) path = tmp4.Data();
-        else path=mypath;
 
 // select date
 	Int_t year,month,day;
