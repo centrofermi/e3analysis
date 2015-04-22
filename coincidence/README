@@ -32,3 +32,9 @@ or
 
 Also macro for autocorrelation was added to perform analysis in a single telescope looking at correlation of different triggered events.
 The same config file as for the two coindences studies should be used
+
+To merge more files before to run doCoinc.C the macro DoMerge.C can be used:
+1) let prepare a list (filename->lista) of files you want to merge (i.e. ls BOLO-01-BOLO-04* >lista)
+2) run: root -b -q -l DoMerge.C
+3) rename the file outputMerge.root
+
