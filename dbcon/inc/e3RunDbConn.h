@@ -7,6 +7,8 @@
 #include <fstream> 
 #include <sstream> 
 #include <cstdlib>
+#include <ctime>
+#include <cstring>
 #include <climits> //for INT_MAX
 #include <map>
 #include <vector>
@@ -38,6 +40,9 @@ class e3RunDbConn{
   MYSQL_RES *_queryRes;
   MYSQL_FIELD *_dbFields;
   MYSQL_ROW _dbRow;
+
+  struct tm _e3Start;
+  time_t _e3StartTime;
 
   void finish_with_error();
 
@@ -88,7 +93,7 @@ class e3RunDbConn{
     Get run list in a spiecified time window.
 
    */
-  void GetRunList(const string, const string, unsigned int);
+  int GetRunList(vector<string>&, const string, const string, const string, unsigned int);
 
 
   inline void SetVerbosity(unsigned int vLevel){ _vLevel = vLevel; };

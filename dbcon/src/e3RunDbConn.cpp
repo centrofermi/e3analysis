@@ -35,6 +35,10 @@ e3RunDbConn::e3RunDbConn(const string hostName, const string dbUser, const strin
 
   _mysqlCon = NULL;
 
+  _e3Start.tm_hour = 0; _e3Start.tm_min = 0; _e3Start.tm_sec = 0; _e3Start.tm_isdst = 0;
+  _e3Start.tm_year = 107; _e3Start.tm_mon = 0; _e3Start.tm_mday = 1;
+  _e3StartTime = mktime(&_e3Start) - timezone; 
+
 }
 
 // e3RunDbConn Init member function
@@ -51,7 +55,7 @@ void e3RunDbConn::Init(){
     if (mysql_real_connect(_mysqlCon, _hostName.c_str(), "eee", "eee-monitoring","eee_rundb2",0, NULL, 0) == NULL) {
       finish_with_error();
     }  
-    else if(_vLevel>0) cout<<"[e3RunDbConn::Init - INFO] DB "<<_dbName<<" on host "<<_hostName<<" connected."<<endl;
+    else if(_vLevel>1) cout<<"[e3RunDbConn::Init - INFO] DB "<<_dbName<<" on host "<<_hostName<<" connected."<<endl;
 
 
 }
@@ -66,20 +70,68 @@ void e3RunDbConn::CloseConn(){
 
 // e3RunDbConn GetRunList member function
 //------------------------------------------------------------
-void e3RunDbConn::GetRunList(const string tWinLow, const string tWinUp, unsigned int outFormat){
+int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID, const string tWinLowStr, const string tWinUpStr, unsigned int outFormat){
 
-  string _tWinLow = "2015-03-01 00:00:00";
-  string _tWinUp = "2015-03-02 00:00:00";
+  //***************************
+  //Time window limit
+  //***************************
+  char dummy;
+  stringstream lineStream;
 
+  struct tm _tWinLow;
+  memset(&_tWinLow, 0, sizeof _tWinLow);  // set all fields to 0
+  lineStream.str(tWinLowStr);
+
+  // Parse the input and store each value into the correct variables.
+  lineStream >> _tWinLow.tm_year >> dummy >> _tWinLow.tm_mon >> dummy >> _tWinLow.tm_mday >> dummy >> _tWinLow.tm_hour >> dummy >> _tWinLow.tm_min >> dummy >> _tWinLow.tm_sec;
+  if(!lineStream && (_tWinLow.tm_year==0 || _tWinLow.tm_mon==0 || _tWinLow.tm_mday==0)) {
+    cerr << "[e3RunDbConn::GetRunList - ERROR] You entered an invalid date/time value." << endl;
+    return 1;
+  }
+
+  _tWinLow.tm_year -= 1900;
+  _tWinLow.tm_mon --;
+  time_t _tWinLowTime = mktime(&_tWinLow) - timezone; 
+  double _tWinLowSec = difftime(_tWinLowTime,_e3StartTime);
+
+  struct tm _tWinUp;
+  memset(&_tWinUp, 0, sizeof _tWinUp);  // set all fields to 0
+  lineStream.clear();
+  lineStream.str(tWinUpStr);
+  // Parse the input and store each value into the correct variables.
+  lineStream >> _tWinUp.tm_year >> dummy >> _tWinUp.tm_mon >> dummy >> _tWinUp.tm_mday >> dummy >> _tWinUp.tm_hour >> dummy >> _tWinUp.tm_min >> dummy >> _tWinUp.tm_sec;
+  if(!lineStream && (_tWinUp.tm_year==0 || _tWinUp.tm_mon==0 || _tWinUp.tm_mday==0)) {
+    cerr << "[e3RunDbConn::GetRunList - ERROR] You entered an invalid date/time value." << endl;
+    return 1;
+  }
+
+  _tWinUp.tm_year -= 1900;
+  _tWinUp.tm_mon --;
+  time_t _tWinUpTime = mktime(&_tWinUp) - timezone; 
+  double _tWinUpSec = difftime(_tWinUpTime,_e3StartTime);
+
+  //***************************
+  //Output format options
+  //***************************
   bool _fullPath=false;
   if(outFormat == 1) _fullPath=true;
 
+  //***************************
+  //Query string
+  //***************************
   _queryStr.clear();
+  _queryStr.precision(0);
   _queryStr<<"SELECT * FROM runs ";
-  _queryStr<<"WHERE station_name='GROS-01' ";
-  _queryStr<<"LIMIT 2";
-  cout<<_queryStr.str().c_str()<<endl;
+  _queryStr<<"WHERE station_name='"<<stationID<<"' ";
+  _queryStr<<"AND run_start>="<<fixed<<_tWinLowSec<<" ";
+  _queryStr<<"AND run_stop<"<<fixed<<_tWinUpSec<<" ";
+  // _queryStr<<"LIMIT 2";
 
+  if(_vLevel>1) cout<<"[e3RunDbConn::GetRunList - INFO] Performing query: "<<_queryStr.str()<<endl;
+
+  //***************************************
+  //Perform query and store results
+  //***************************************
   if (mysql_query(_mysqlCon,_queryStr.str().c_str()))
   {
       finish_with_error();
@@ -132,12 +184,13 @@ void e3RunDbConn::GetRunList(const string tWinLow, const string tWinUp, unsigned
       _fileName<<_dbRow[0]<<"-"<<_dbRow[1]<<"-";
       _fileName.fill('0'); _fileName.width(5); _fileName<<_dbRow[2];
       _fileName<<"_dst.root";  
-      cout<<_fileName.str()<<endl;
+      fileNameList.push_back(_fileName.str());
 
     }
   
   mysql_free_result(_queryRes);
 
+  return 0;
 }
 
 

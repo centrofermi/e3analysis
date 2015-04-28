@@ -87,11 +87,11 @@ MYSQLLIBS 	 :=$(shell mysql_config --libs)
 
 # compiler, linker and utilities
 
-C 	:= $(shell root-config --cc)
-CXX 	:= $(shell root-config --cxx)
-FC 	:= $(shell root-config --f77)
-LD 	:= $(shell root-config --ld)
-SHARED 	:= -shared -fPIC
+C 	    	       := $(shell root-config --cc)
+CXX	:= $(shell root-config --cxx)
+FC 	   	   := $(shell root-config --f77)
+LD 		    := $(shell root-config --ld)
+SHARED   := -shared -fPIC
 
 #-------------------------------------------------
 # compile flags
