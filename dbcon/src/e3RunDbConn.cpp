@@ -22,13 +22,18 @@ void e3RunDbConn::finish_with_error()
 
 }
 
-// E3RUNDBCONN default constructor
+// E3RUNDBCONN constructor
 //------------------------------------------------------------
-e3RunDbConn::e3RunDbConn(){
+e3RunDbConn::e3RunDbConn(const string hostName, const string dbUser, const string dbPwd,  const string dbName){
+
+  _vLevel = 0;
+
+  _hostName = hostName;
+  _dbUser = dbUser;
+  _dbPwd = dbPwd;
+  _dbName = dbName;
 
   _mysqlCon = NULL;
-
-  // _vlevel = 0;
 
 }
 
@@ -36,12 +41,18 @@ e3RunDbConn::e3RunDbConn(){
 //------------------------------------------------------------
 void e3RunDbConn::Init(){
 
-    MYSQL *con = mysql_init(NULL);
-    if (con == NULL) 
+    _mysqlCon = mysql_init(NULL);
+    if (_mysqlCon == NULL) 
       {
-	cerr<<"[]e3RunDbConn::Init - ERROR] "<<mysql_error(con)<<endl;
+	cerr<<"[e3RunDbConn::Init - ERROR] "<<mysql_error(_mysqlCon)<<endl;
 	exit(1);
       }
+
+    if (mysql_real_connect(_mysqlCon, _hostName.c_str(), "eee", "eee-monitoring","eee_rundb2",0, NULL, 0) == NULL) {
+      finish_with_error();
+    }  
+    else if(_vLevel>0) cout<<"[e3RunDbConn::Init - INFO] DB "<<_dbName<<" on host "<<_hostName<<" connected."<<endl;
+
 
 }
 
@@ -52,6 +63,83 @@ void e3RunDbConn::CloseConn(){
   mysql_close(_mysqlCon);
 
 }
+
+// e3RunDbConn GetRunList member function
+//------------------------------------------------------------
+void e3RunDbConn::GetRunList(const string tWinLow, const string tWinUp, unsigned int outFormat){
+
+  string _tWinLow = "2015-03-01 00:00:00";
+  string _tWinUp = "2015-03-02 00:00:00";
+
+  bool _fullPath=false;
+  if(outFormat == 1) _fullPath=true;
+
+  _queryStr.clear();
+  _queryStr<<"SELECT * FROM runs ";
+  _queryStr<<"WHERE station_name='GROS-01' ";
+  _queryStr<<"LIMIT 2";
+  cout<<_queryStr.str().c_str()<<endl;
+
+  if (mysql_query(_mysqlCon,_queryStr.str().c_str()))
+  {
+      finish_with_error();
+  }
+
+  _queryRes = mysql_store_result(_mysqlCon);
+  if (_queryRes == NULL) 
+  {
+      finish_with_error();
+  }
+
+  //QUERY res Dump
+  if(_vLevel>5){
+
+    _dbFields = mysql_fetch_fields(_queryRes);
+    for(unsigned int ifield = 0; ifield <mysql_num_fields(_queryRes)-10; ifield++)
+      cout<<"\t\t"<<_dbFields[ifield].name;
+    cout<<endl;
+
+    unsigned int irow=0;
+    while ((_dbRow = mysql_fetch_row(_queryRes))) 
+      { 
+  
+	for(unsigned int ifield = 0; ifield <mysql_num_fields(_queryRes)-10; ifield++)
+	  {
+
+	    cout<<"\t\t"<<(_dbRow[ifield]  ? _dbRow[ifield]:"NULL");
+
+	  }
+	cout<<endl;
+	irow++;
+
+      }
+
+  }
+
+  while ((_dbRow = mysql_fetch_row(_queryRes))) 
+    { 
+      	  
+      stringstream _fileName;
+      _fileName.clear();
+
+      if(_fullPath)
+	{
+	  _fileName<<"/recon/";
+	  _fileName<<_dbRow[0]<<"/";
+	  _fileName<<_dbRow[1]<<"/";
+	}
+
+      _fileName<<_dbRow[0]<<"-"<<_dbRow[1]<<"-";
+      _fileName.fill('0'); _fileName.width(5); _fileName<<_dbRow[2];
+      _fileName<<"_dst.root";  
+      cout<<_fileName.str()<<endl;
+
+    }
+  
+  mysql_free_result(_queryRes);
+
+}
+
 
 // // SAMSEventR GetRunID member function
 // //------------------------------------------------------------

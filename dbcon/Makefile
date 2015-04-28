@@ -2,6 +2,7 @@
 include ./Makefile.inc
 
 TARGET		:= dbcon_test.exe
+TARGLIB 		:= libe3RunDbConn.so
 
 MAINDIR		:= $(shell pwd)
 INCDIR			:= $(MAINDIR)/inc
@@ -9,11 +10,14 @@ SRCDIR		:= $(MAINDIR)/src
 BINDIR 			:= $(MAINDIR)/bin
 LIBDIR	 		:= $(MAINDIR)/lib
 
+LINKDEFS		:= 
+
 INCLUDES     	:= $(wildcard $(INCDIR)/*.h)                          
 SOURCES      	:= $(wildcard $(SRCDIR)/*.cpp)
 CSOURCES      	:= $(wildcard $(SRCDIR)/*.c)
 OBJECTS	     	+= $(SOURCES:$(SRCDIR)/%.cpp=$(BINDIR)/%.o)
 OBJECTS	     	+= $(CSOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
+MAINOBJ		:= $(BINDIR)/main.o
 
 #-------------------------------------------------
 # primary targets
@@ -23,13 +27,22 @@ OBJECTS	     	+= $(CSOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
 
 exec: $(TARGET)
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(MAINOBJ) $(TARGLIB)
 	@echo "Creating executable file $@"
 	@$(LD) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(ROOTLIBS) $(MYSQLLIBS)
+
+lib: $(TARGLIB)
+
+$(TARGLIB): $(filter-out $(MAINOBJ),$(OBJECTS))
+	@echo "Creating shared library $@"
+	@$(LD) $(SHARED) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(MYSQLLIBS)
+
 clean:
 	@echo "Cleaning up ..."
 	@$(DEL) $(MAINDIR)/$(TARGET) \
-	$(OBJECTS) $(BINDIR)/*.d \
+	$(MAINDIR)/$(TARGLIB) \
+	$(LIBDIR)/lib* \
+	$(OBJECTS) $(BINDIR)/*.d
 
 #-------------------------------------------------
 # generic rules

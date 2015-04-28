@@ -25,6 +25,8 @@ enum STATUS {
   BAD_STAT=0x00
 };
 
+int VLEVEL = 0;
+
 int GetUserOpt(int, char**);
 
 //! Main routine
@@ -43,8 +45,8 @@ int main(int argc, char *argv[]) {
 
   _status=GetUserOpt(argc, argv);              
   if(_status!=OK_STAT){ 
-    if(_status==1) cerr<<"[ltcube.exe - ERROR] GetUserOpt function has returned error code "
-		       <<_status<<". Too few arguments. "<<endl;
+    if(_status==0) cerr<<"[dbcon_test.exe - ERROR] GetUserOpt returned error code "
+		       <<_status<<" - too few arguments. "<<endl;
     exit(EXIT_FAILURE);
   }
 
@@ -52,8 +54,15 @@ int main(int argc, char *argv[]) {
   // Init db connection
   //========================================  
 
-  _mysqlCon = new e3RunDbConn();
+  _mysqlCon = new e3RunDbConn("131.154.96.193","eee","eee-monitoring","eee_rundb2");
+  _mysqlCon->SetVerbosity(VLEVEL);
   _mysqlCon->Init();
+
+  //======================================== 
+  // Get run list
+  //========================================  
+
+  _mysqlCon->GetRunList("2015-03-01","2015-03-05",1);
 
   //======================================== 
   // Close db connection
@@ -87,7 +96,7 @@ int GetUserOpt(int argc, char* argv[]){
   // opt->addUsage( "  -d, --dump               Enable output recording in ASCII format" );
   // opt->addUsage( "  -b, --angbin <binsize>   Insert lat.&long. binning size [deg.]" );
   // opt->addUsage( "  -c, --config <actcode>   Insert attitude-coordinate-time code" );
-  // opt->addUsage( "  -v, --verbose <vlevel>   Change verbosity level" );
+  opt->addUsage( "  -v, --verbose <vlevel>   Change verbosity level" );
   opt->addUsage( "" );
   opt->addUsage( "Arguments: " );
   // opt->addUsage( "  DateTimeInt              UTC Date&Time Interval(format: YYMMDDhhmmss_YYMMDDhhmmss)" );
@@ -101,7 +110,7 @@ int GetUserOpt(int argc, char* argv[]){
   opt->setFlag( "help", 'h' );  
   // opt->setFlag( "dump", 'd' );
   opt->setOption( "host", 's' );
-  // opt->setOption( "verbose", 'v' );
+  opt->setOption( "verbose", 'v' );
 
   opt->processCommandArgs( argc, argv );      // go through the command line and get the options 
 
@@ -141,9 +150,9 @@ int GetUserOpt(int argc, char* argv[]){
 
   // }
 
-  // if( opt->getValue( "verbose" ) != NULL ){
-  //   VLEVEL=atoi(opt->getValue( "verbose" )); 
-  // }
+  if( opt->getValue( "verbose" ) != NULL ){
+    VLEVEL=atoi(opt->getValue( "verbose" )); 
+  }
 
   switch(opt->getArgc()){                                   //get the actual arguments after the options
 
@@ -157,7 +166,7 @@ int GetUserOpt(int argc, char* argv[]){
   //   break;
 
   default:
-    return BAD_STAT;
+    return OK_STAT;
     break;
   }
 
