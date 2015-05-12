@@ -76,6 +76,9 @@ ROOTLIBS  		   = $(filter-out $(misslibs),$(allROOTLIBS))
 ROOTGRAPHICSLIBS := -lGui -lGeom -lGeomPainter -lHistPainter
 ROOTGLIBS     	 := $(shell root-config --glibs) -lGpad -lGX11 -lX3d -lGeom -lGeomPainter -lHistPainter
 
+MYSQLCFLAGS	 :=$(shell mysql_config --cflags)
+MYSQLLIBS 	 :=$(shell mysql_config --libs)
+
 #-------------------------------------------------
 # platform-specific definitions
 #-------------------------------------------------
@@ -126,3 +129,6 @@ endif
 COMMLIBS := -lgfortran
 
 #-------------------------------------------------
+#
+#
+E3LIBS     = -L$(shell pwd)/lib -le3RunDbConn

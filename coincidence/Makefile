@@ -1,13 +1,13 @@
 
 include ./Makefile.inc
 
-TARGET		:= analisiCoincAtCnaf.exe
+TARGET		:= CoincAtCnaf.exe
 
 MAINDIR		:= $(shell pwd)
-INCDIR		:= $(MAINDIR)/inc
-SRCDIR	:= $(MAINDIR)/src
-BINDIR 		:= $(MAINDIR)/bin
-LIBDIR 		:= $(MAINDIR)/lib
+INCDIR			:= $(MAINDIR)/inc
+SRCDIR		:= $(MAINDIR)/src
+BINDIR 			:= $(MAINDIR)/bin
+LIBDIR 			:= $(MAINDIR)/lib
 
 INCLUDES     	:= $(wildcard $(INCDIR)/*.h)                          
 SOURCES      	:= $(wildcard $(SRCDIR)/*.C)
@@ -23,11 +23,13 @@ OBJECTS	     	+= $(CSOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
 
 .PHONY : clean
 
-exec: $(TARGET)
+#exec: $(TARGET)
 
-$(TARGET): $(OBJECTS) $(AMSLIBS)
+$(TARGET): $(OBJECTS)
 	@echo "Creating executable file $@"
-	@$(LD) $(LDFLAGS) $^ -o $@  $(COMMLIBS) $(ROOTLIBS) 
+	@$(LD) $(LDFLAGS) $^ -o $@  $(ROOTLIBS)  \
+	 $(MYSQLLIBS) $(E3LIBS) 
+
 clean:
 	@echo "Cleaning up ..."
 	@$(DEL) $(MAINDIR)/$(TARGET) \

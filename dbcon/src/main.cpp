@@ -110,7 +110,7 @@ int GetUserOpt(int argc, char* argv[]){
   opt->addUsage( "" );
   opt->addUsage( "Arguments: " );
   opt->addUsage( "  StationID               Telescope name" );
-  opt->addUsage( "  DateTimeWindows              UTC Date&Time Interval(format: YY-MM-DD_hh:mm:ss/YY- MM-DD_hh:mm:ss)" );
+  opt->addUsage( "  DateTimeWindows              UTC Date&Time Interval(format: YYYY-MM-DD_hh:mm:ss/YYYY- MM-DD_hh:mm:ss)" );
   opt->addUsage( "" );
   //opt->addUsage( "Notes: ");
   //opt->addUsage( "" );

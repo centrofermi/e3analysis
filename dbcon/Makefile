@@ -1,7 +1,7 @@
 
 include ./Makefile.inc
 
-TARGET		:= dbcon_test.exe
+TARGET		:= DbConnTest.exe
 TARGLIB 		:= libe3RunDbConn.so
 
 MAINDIR		:= $(shell pwd)
@@ -23,7 +23,7 @@ MAINOBJ		:= $(BINDIR)/main.o
 # primary targets
 #-------------------------------------------------
 
-.PHONY : clean
+.PHONY : exec, lib, clean
 
 exec: $(TARGET)
 
