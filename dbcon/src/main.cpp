@@ -1,10 +1,11 @@
-//////////////////////////////////////////////////////////
-// main.cpp 
-// e3rundb utility: shows the capabilities of the e3rundb connector class 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// dbConnTest.exe
 //
-// Created by F.Pilo 
+// e3RunDbConn tutorial: shows the capabilities of the e3rundb connector class 
 //
-////////////////////////////////////////////////////// 
+// Created by F.Pilo on April 2015
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <string>
 #include <cmath>
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   _status=GetUserOpt(argc, argv);              
   if(_status!=OK_STAT){ 
-    if(_status==0) cerr<<"[dbcon_test.exe - ERROR] GetUserOpt returned error code "
+    if(_status==0) cerr<<"[dbConnTest.exe - ERROR] GetUserOpt returned error code "
 		       <<_status<<" - too few arguments. "<<endl;
     exit(EXIT_FAILURE);
   }
@@ -101,7 +102,7 @@ int GetUserOpt(int argc, char* argv[]){
   //opt->setVerbose();                          // print warnings about unknown options
   //opt->autoUsagePrint(false);                 // print usage for bad options
 
-  opt->addUsage( "Usage: dbcon_test.exe [options] [arguments]" );
+  opt->addUsage( "Usage: dbConnTest.exe [options] [arguments]" );
   opt->addUsage( "" );
   opt->addUsage( "Options: " );
   opt->addUsage( "  -h, --help               Print this help " );
@@ -122,7 +123,7 @@ int GetUserOpt(int argc, char* argv[]){
   opt->processCommandArgs( argc, argv );      // go through the command line and get the options 
 
   if( ! opt->hasOptions()) {                  // print usage if no options 
-    cout<<"[dbcon_test.exe - WARNING] No options/arguments specified. Using default settings. Type 'dbcon.exe --help' for usage."<<endl;
+    cout<<"[dbConnTest.exe - WARNING] No options/arguments specified. Using default settings. Type 'dbcon.exe --help' for usage."<<endl;
     delete opt;
     return BAD_STAT;
   }

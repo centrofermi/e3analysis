@@ -110,6 +110,7 @@ CXXFLAGS += -v
 endif
 
 CXXFLAGS += $(ROOTCFLAGS)
+CXXFLAGS += $(MYSQLCFLAGS)
 
 # Fortran flags
 FCFLAGS:= -O3 -fPIC -Wall

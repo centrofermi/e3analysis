@@ -1,7 +1,7 @@
 
 include ./Makefile.inc
 
-TARGET		:= DbConnTest.exe
+TARGET		:= dbConnTest.exe
 TARGLIB 		:= libe3RunDbConn.so
 
 MAINDIR		:= $(shell pwd)
