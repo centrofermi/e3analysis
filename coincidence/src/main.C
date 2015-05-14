@@ -43,10 +43,11 @@ enum STATUS {
   OK_STAT=0x01,
   BAD_STAT=0x00
 };
+
+bool USEDB;
 string STATIONIDS;
 string DATETIMEWIN;
 string DSTPATH;
-bool USEDB;
 
 int GetUserOpt(int, char**);
 
@@ -63,6 +64,7 @@ int main(int argc,char *argv[]){
   // Set default values
   //========================================  
 
+  USEDB = kTRUE;
   DSTPATH = "/recon";
 
   //======================================== 

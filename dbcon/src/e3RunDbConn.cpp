@@ -119,6 +119,7 @@ int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID
   //***************************
   //Query string
   //***************************
+  _queryStr.str("");
   _queryStr.clear();
   _queryStr.precision(0);
   _queryStr<<"SELECT * FROM runs ";
