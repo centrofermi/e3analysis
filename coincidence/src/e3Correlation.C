@@ -7,6 +7,8 @@
 //
 //****************************************************************************************************
 
+#include <algorithm>
+
 #include <TFile.h>
 #include <TTree.h>
 #include <Riostream.h>
@@ -150,8 +152,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     cout<<"[e3Correlation.correlation_EEE - WARNING] Using <file_list> option ALL the runs collected on "<<date
 	<<" will be analysed."<<endl; 
         
-    Int_t year,month,day;
-    sscanf(date,"%d-%d-%d",&year,&month,&day);
+    // Int_t year,month,day;
+    // sscanf(date,"%d-%d-%d",&year,&month,&day);
 
     //========================================  
     // Create run lists
@@ -475,7 +477,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   // Define output correlation Trees
   //=================================================
 
-  TFile *fileout = new TFile(Form("%s/%s-%s.root",".",tel_code1,tel_code2), "RECREATE");
+  TString _fileOutName;  
+  string _strOut(mydata); 
+  replace( _strOut.begin(), _strOut.end(), '/', '_');
+
+  _fileOutName+=tel_code1;   _fileOutName+="_";   _fileOutName+=tel_code2;
+  _fileOutName+="_";   _fileOutName+=_strOut.c_str(); _fileOutName+=".root"; 
+  TFile *fileout = new TFile(_fileOutName, "RECREATE");
   fileout->ls();
 
   TTree *treeout = new TTree("tree", "Delta T");
