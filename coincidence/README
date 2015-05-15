@@ -32,3 +32,5 @@ or
 
 Also macro for autocorrelation was added to perform analysis in a single telescope looking at correlation of different triggered events.
 The same config file as for the two coindences studies should be used
+
+Documentation (PDF files) in "doc" dir provided by P. La Rocca
