@@ -1,3 +1,4 @@
+
 //****************************************************************************************************
 //
 // e3COrrelation.C
@@ -15,6 +16,7 @@
 #include <TChain.h>
 #include <TRandom.h>
 #include <TH1.h>
+#include <TStopwatch.h>
 
 #include "e3Correlation.h"
 #include "e3RunDbConn.h"
@@ -30,6 +32,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   int _ret=0;         
   int _vLevel=0;      ///< Verbosity level
 
+  TStopwatch _timer;
+  _timer.Start();
+
   const char *tel_code1;
   const char *tel_code2;
   tel_code1 = mysc1,tel_code2 = mysc2;
@@ -40,6 +45,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   TChain *t1 = new TChain("Events");
   TChain *t2 = new TChain("Events");
     
+  Double_t ctime1, ctime2;
+  Float_t Theta1,Phi1,Theta2,Phi2;
+
   //======================================== 
   // Init TH1 histograms
   //========================================  
@@ -91,7 +99,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
       _dtWinUp.replace(_dtWinUp.find("_")-2,2,buffer.str().c_str());
     }
 
-    STATIONID=mysc1;
+    _fileNameList.clear(); STATIONID=mysc1;
     if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,1)!=0){
       exit(EXIT_FAILURE);
     }
@@ -105,7 +113,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t1->Add((*it).c_str());
     }
 
-    STATIONID=mysc2;
+    _fileNameList.clear(); STATIONID=mysc2;
     if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,1)!=0){
       exit(EXIT_FAILURE);
     }
@@ -188,6 +196,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
   }
 
+  _timer.Stop();
+  cout << endl<<"[e3Correlation.correlation_EEE - INFO] TChains poulated - Cpu time: "
+       << _timer.CpuTime()*1000
+       << " - Real time: " << _timer.RealTime()*1000<< " msec."
+       << endl;
+  _timer.Start();
+  
   //========================================  
   // Define input tree structure	
   //========================================  
@@ -243,9 +258,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     cerr<<"[e3Correlation.correlation_EEE - ERROR]  No events for telescope "<<tel_code2<<". Exiting ..."<<endl; 
     exit(EXIT_FAILURE); 
   }
-
-  Double_t ctime1, ctime2;
-  Float_t Theta1,Phi1,Theta2,Phi2;
 
   //========================================  
   // Find time range
@@ -328,14 +340,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   cout << " to " << timestr;
   cout << ", DeltaT = " << (ctmax-ctmin) << " s" << endl;
 
-  // cout <<"N.entry1 = "<< nent1<<"   N.entry2 = "<<nent2 << endl;
-  // cout << "Time range file 1: " << t1min << " --> " << t1max << ", range = " << range1 << endl;
-  // cout << "Time range file 2: " << t2min << " --> " << t2max << ", range = " << range2 << endl;
   Double_t tmin = TMath::Min(t1min, t2min);
   Double_t tmax = TMath::Max(t1max, t2max);
-  // cout << "Common measure time interval = "<<(TMath::Min(t1max, t2max)-TMath::Max(t1min, t2min))<< " s"<<endl;
 
-  // collect info on run duration and rate
+  //========================================  
+  // Collect info on runs duration and rate
+  //========================================  
+
   for(Int_t e1 = 0; e1 < nent1; e1++) {
     t1->GetEntry(e1);
     hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
@@ -374,6 +385,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
   hEventPerRun1->Divide(htimePerRun1);
   hEventPerRun2->Divide(htimePerRun2);
+
+  _timer.Stop();
+  cout << endl<<"[e3Correlation.correlation_EEE - INFO] Collected info on Runs duration and rate - Cpu time: "
+       << _timer.CpuTime() *1000
+       << " - Real time: " << _timer.RealTime() *1000 << " msec."
+       << endl;
+  _timer.Start();
 
   //========================================  
   // Chain mesh: define starting time cell for both trees
@@ -419,9 +437,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
       cell[cellIndex][size] = i;
     }
   }
-  //********************************************	
+
+  //=================================================
   // Define output correlation tree
-  //********************************************
+  //=================================================
+
   TFile *fileout = new TFile(Form("%s/%s-%s.root",".",tel_code1,tel_code2), "RECREATE");
   fileout->ls();
 
@@ -458,21 +478,21 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   treeTimeCommon->Branch("timeduration",&timeduration,"timeduration/I");
 
   // Fill the infos
-  for(Int_t i=1;i<=500;i++){
-    if(htimePerRun1->GetBinContent(i) > 0){
-      runnumber = i-1;
-      timeduration = htimePerRun1->GetBinContent(i);
-      ratePerRun = hEventPerRun1->GetBinContent(i);
-      ratePerRunAll = hAllPerRun1->GetBinContent(i);
-      FractionGoodTrack = hGoodTrackPerRun1->GetBinContent(i);
+  for(Int_t irun=1; irun<=500; irun++){
+    if(htimePerRun1->GetBinContent(irun) > 0){
+      runnumber = irun-1;
+      timeduration = htimePerRun1->GetBinContent(irun);
+      ratePerRun = hEventPerRun1->GetBinContent(irun);
+      ratePerRunAll = hAllPerRun1->GetBinContent(irun);
+      FractionGoodTrack = hGoodTrackPerRun1->GetBinContent(irun);
       treeTel1->Fill();
     }
-    if(htimePerRun2->GetBinContent(i) > 0){
-      runnumber = i-1;
-      timeduration = htimePerRun2->GetBinContent(i);
-      ratePerRun = hEventPerRun2->GetBinContent(i);
-      ratePerRunAll = hAllPerRun2->GetBinContent(i);
-      FractionGoodTrack = hGoodTrackPerRun2->GetBinContent(i);
+    if(htimePerRun2->GetBinContent(irun) > 0){
+      runnumber = irun-1;
+      timeduration = htimePerRun2->GetBinContent(irun);
+      ratePerRun = hEventPerRun2->GetBinContent(irun);
+      ratePerRunAll = hAllPerRun2->GetBinContent(irun);
+      FractionGoodTrack = hGoodTrackPerRun2->GetBinContent(irun);
       treeTel2->Fill();
     }
   }
@@ -530,37 +550,58 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
 
 
+  //=================================================
+  // Correlation loop
+  //=================================================  
+
+  int last_e1 = 0;
   for(e1 = 0; e1 < nent1; e1++) {
-    if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
+
+    if (!(e1 % 10000)){
+      _timer.Stop();
+      cout << "\r[e3Correlation.correlation_EEE - INFO] Correlating entry #" << e1;
+      cout <<". Last "<<e1-last_e1<<" entries required Cpu time: "
+	   << _timer.CpuTime()*1000
+	   << " - Real time: " << _timer.RealTime()*1000<< " msec."
+	   << flush;
+      _timer.Start();
+    }
+
     t1->GetEntry(e1);
     // Calculate Theta1, Phi1
     calculateThetaPhi(XDir1, YDir1, ZDir1, Theta1, Phi1);
     ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
     cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
+
     for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
       if (i < 0 || i >= ncells) continue;
+
       for (Int_t j = 0; j < cell[i].GetSize(); j++) {
-  	size = cell[cellIndex].GetSize();
-  	e2 = cell[i].At(j);
-  	t2->GetEntry(e2); 
-  	ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; 
-  	//DiffTime= ctime1 - ctime2;    
-  	if((Seconds1-Seconds2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
-  	else DiffTime=((Double_t ) Seconds1 - (Double_t ) Seconds2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2); 
-  	// Calculate Theta2, Phi2
-  	calculateThetaPhi(XDir2, YDir2, ZDir2, Theta2, Phi2);
-  	ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
+    	size = cell[cellIndex].GetSize();
+    	e2 = cell[i].At(j);
+    	t2->GetEntry(e2); 
+    	ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; 
 
-  	if(StatusCode1) ChiSquare1 = 1000;
-  	if(StatusCode2) ChiSquare2 = 1000;
+    	//DiffTime= ctime1 - ctime2;    
+    	if((Seconds1-Seconds2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
+    	else DiffTime=((Double_t ) Seconds1 - (Double_t ) Seconds2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2);
+ 
+    	// Calculate Theta2, Phi2
+    	calculateThetaPhi(XDir2, YDir2, ZDir2, Theta2, Phi2);
+    	ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
 
-  	if(TMath::Abs(DiffTime) <= 1E-4*1E9  && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
+    	if(StatusCode1) ChiSquare1 = 1000;
+    	if(StatusCode2) ChiSquare2 = 1000;
+
+    	if(TMath::Abs(DiffTime) <= 1E-4*1E9  && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
       }
     }
   }
-  //********************************************
-  // Closing files
-  //********************************************
+
+  //=================================================
+  // Close output files
+  //=================================================  
+
   cout << endl;
   fileout->cd();
   treeout->Write();
@@ -568,9 +609,12 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   treeTel2->Write();
   treeTimeCommon->Write();
   fileout->Close();
-  cout<<"Correlation tree completed"<<endl;
+  cout<<"\n[e3Correlation.correlation_EEE - INFO] Correlation tree completed."<<endl<<endl;
+
+  _timer.Stop();
 
   return;
+
 }
 
 // correlation_EEE3 function

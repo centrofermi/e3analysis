@@ -15,6 +15,7 @@
 //
 //****************************************************************************************************
 
+#include <cstdio>
 #include <string>
 #include <cmath>
 #include <iostream>
@@ -26,13 +27,7 @@
 #include <TTree.h>
 #include <Riostream.h>
 #include <TMath.h>
-#include <stdio.h>
 #include <TString.h>
-#include <TArrayI.h>
-#include <TChain.h>
-#include "TRandom.h"
-#include <TH1I.h>
-#include <TH1F.h>
 
 #include "e3Correlation.h"
 #include "anyoption.h"
@@ -89,58 +84,12 @@ int main(int argc,char *argv[]){
     exit(EXIT_FAILURE);
   }
 
-  // //Time window
-  // string _dtWinLow, _dtWinUp;
-  // istringstream _iss(DATETIMEWIN);
-  // getline(_iss, _dtWinLow, '/');
-  // getline(_iss, _dtWinUp);
-
-  // if(__dtWinUp.empty()){
-  //   cout<<"[CoincAtCnaf.exe - WARNING] Only 1 date specified. All the runs collected in the corresponding day will be processed."<<endl;
-  // }
-
   // printf("list of options to overwrite the config file infos:\n");
   // printf("-d DATE = to pass the date from line command\n");
   // printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
   // printf("-p PATH = to pass the path of the reco dirs");
 
-  int kNoConfigFile = 0;
-
-  // for(Int_t i=1;i < argc;i++){
-  //   if(CfrString(argv[i],"-d")){
-  //     if(i+1 > argc){
-  //       printf("date is missing\n");
-  // 	return 1;
-  //     }
-       
-  //     date = argv[i+1];
-  //     i++;
-  //     kNoConfigFile++;
-  //   }
-  //   if(CfrString(argv[i],"-s")){                       
-  //     if(i+2 > argc){
-  //       printf("Two schools name have to be provided\n");
-  //       return 2;
-  //     }
- 
-  //     sc1 = argv[i+1];
-  //     sc2 = argv[i+2];
-
-  //     i+=2;
-  //     kNoConfigFile++;
-  //   }
-  //   if(CfrString(argv[i],"-p")){
-  //     if(i+1 > argc){
-  //       printf("path is missing\n");
-  //       return 1;
-  //     }
-
-  //     path = argv[i+1];
-  //     i++;  
-  //     kNoConfigFile++;
-  //   }
-
-  // }
+  // int kNoConfigFile = 0;
 
   correlation_EEE(DATETIMEWIN.c_str(),_tel1.c_str(),_tel2.c_str(),DSTPATH.c_str(),USEDB);
 
