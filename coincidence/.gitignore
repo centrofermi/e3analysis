@@ -1,6 +1,7 @@
 # Ignore everything in this directory
 
 *~
+*.root
 
 # Except this file
 
