@@ -1,0 +1,4 @@
+#!/bin/bash
+cd lib
+ln -s ../../dbcon/libe3RunDbConn.so  libe3RunDbConn.so
+cd ..
