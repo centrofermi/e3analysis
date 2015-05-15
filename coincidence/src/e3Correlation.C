@@ -52,11 +52,14 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   // Init TH1 histograms
   //========================================  
   
-  TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
-  TH1I *hexposure2 = new TH1I("hexposure2","Active run number in a given second;second - time_first_event;run number telescope 2",100000,0,100000);
+  TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;Run number telescope 1",100000,0,100000);
+  TH1I *hexposure2 = new TH1I("hexposure2","Active run number in a given second;second - time_first_event;Run number telescope 2",100000,0,100000);
 
-  TH1I *htimePerRun1 = new TH1I("htimePerRun1","time duration of the run for telescope 1;run number;duration (s)",500,0,500);
-  TH1I *htimePerRun2 = new TH1I("htimePerRun2","time duration of the run for telescope 2;run number;duration (s)",500,0,500);
+  TH1I *hUniqueRunIdPerRun1 = new TH1I("hUniqueRunIdPerRun1","UniqueRunId of the run for telescope 1;Run number;UniqueRunId",500,0,500);
+  TH1I *hUniqueRunIdPerRun2 = new TH1I("hUniqueRunIdPerRun2","UniqueRunId of the run for telescope 2;Run number;UniqueRunId",500,0,500);
+
+  TH1I *htimePerRun1 = new TH1I("htimePerRun1","time duration of the run for telescope 1;Run number;Duration (s)",500,0,500);
+  TH1I *htimePerRun2 = new TH1I("htimePerRun2","time duration of the run for telescope 2;Run number;Duration (s)",500,0,500);
 
   TH1F *hAllPerRun1 = new TH1F("hAllPerRun1","Rate of all events per Run telescope 1;Run number;Rate of events (Hz)",500,0,500);
   TH1F *hAllPerRun2 = new TH1F("hAllPerRun2","Rate of all events per Run telescope 2;Run number;Rate of events (Hz)",500,0,500);
@@ -347,31 +350,61 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   // Collect info on runs duration and rate
   //========================================  
 
-  for(Int_t e1 = 0; e1 < nent1; e1++) {
+  ULong64_t  cUniqueRunId; Int_t cbin;
+  
+  cUniqueRunId=0, cbin=0;
+  for(Int_t e1=0; e1<nent1; e1++) {
     t1->GetEntry(e1);
-    hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
+    if(UniqueRunId1!=cUniqueRunId){ 
+      // cout<<cUniqueRunId<<" - "<<UniqueRunId1<<" i.e. "
+      // 	  <<" STATIONID "<<(Int_t) (UniqueRunId1/1E9)<<" - "
+      // 	  <<" DAYS FROM EEESTART "<<(Int_t)((UniqueRunId1-(Int_t) (UniqueRunId1/1E9)*1E9)/1E5)<<" - "
+      // 	  <<" RUNID "<<(Int_t)(UniqueRunId1-(Int_t) (UniqueRunId1/1E5)*1E5)
+      // 	  <<endl;
+      // eventtime = e3starttime + 24*60*60*((Int_t)((UniqueRunId1-(Int_t) (UniqueRunId1/1E9)*1E9)/1E5));
+      // timestr = asctime(gmtime(&eventtime)); timestr[strlen(timestr)-1] = '\0';
+      // cout<<timestr<<endl;
+      // cout<<gmtime(&eventtime)->tm_year+1900<<endl;
+      // cout<<gmtime(&eventtime)->tm_mon+1<<endl;
+      // cout<<gmtime(&eventtime)->tm_mday<<endl;
 
-    hAllPerRun1->Fill(RunNumber1);
-    if(StatusCode1==0){
-      hEventPerRun1->Fill(RunNumber1); 
-      if(ChiSquare1 < 10) hGoodTrackPerRun1->Fill(RunNumber1);
+      cbin++; 
+      cUniqueRunId=UniqueRunId1; 
+      hUniqueRunIdPerRun1->SetBinContent(cbin,UniqueRunId1);
     }
+
+    hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),cbin);
+
+    hAllPerRun1->Fill(cbin);
+    hAllPerRun1->Fill(cbin);
+    if(StatusCode1==0){
+      hEventPerRun1->Fill(cbin); 
+      if(ChiSquare1 < 10) hGoodTrackPerRun1->Fill(cbin);
+    }
+
   }
   hGoodTrackPerRun1->Divide(hEventPerRun1);
 
-  for(Int_t e2 = 0; e2 < nent2; e2++) {
+  cUniqueRunId=0; cbin=0;
+  for(Int_t e2=0; e2<nent2; e2++) {
     t2->GetEntry(e2);
-    hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
+    if(UniqueRunId2!=cUniqueRunId){ 
+      cbin++; 
+      cUniqueRunId=UniqueRunId2; 
+      hUniqueRunIdPerRun2->SetBinContent(cbin,UniqueRunId2);
+    }
 
-    hAllPerRun2->Fill(RunNumber2);
+    hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),cbin);
+
+    hAllPerRun2->Fill(cbin);
     if(StatusCode2==0){
-      hEventPerRun2->Fill(RunNumber2);    
-      if(ChiSquare2 < 10) hGoodTrackPerRun2->Fill(RunNumber2);
+      hEventPerRun2->Fill(cbin);    
+      if(ChiSquare2 < 10) hGoodTrackPerRun2->Fill(cbin);
     }
   }
   hGoodTrackPerRun2->Divide(hEventPerRun2);
 
-  for(Int_t i=1;i<100000;i++){
+  for(Int_t i=1; i<100000; i++){
     if(hexposure1->GetBinContent(i) > 0)
       htimePerRun1->Fill(hexposure1->GetBinContent(i));
    
@@ -439,48 +472,65 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   }
 
   //=================================================
-  // Define output correlation tree
+  // Define output correlation Trees
   //=================================================
 
   TFile *fileout = new TFile(Form("%s/%s-%s.root",".",tel_code1,tel_code2), "RECREATE");
   fileout->ls();
 
+  TTree *treeout = new TTree("tree", "Delta T");
+  Int_t e1, e2;	
+  Double_t DiffTime;
+  Float_t ThetaRel;
+  treeout->Branch("ctime1", &ctime1, "ctime1/D");
+  treeout->Branch("ChiSquare1", &ChiSquare1, "ChiSquare1/F");
+  treeout->Branch("TimeOfFlight1", &TimeOfFlight1, "TimeOfFlight1/F");
+  treeout->Branch("TrackLength1", &TrackLength1, "TrackLength1/F");
+  treeout->Branch("Theta1", &Theta1, "Theta1/F");
+  treeout->Branch("Phi1", &Phi1, "Phi1/F");
+  treeout->Branch("UniqueRunId1",&UniqueRunId1,"UniqueRunId1/I");
+  treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
+  treeout->Branch("ctime2", &ctime2, "ctime2/D");
+  treeout->Branch("ChiSquare2", &ChiSquare2, "ChiSquare2/F");
+  treeout->Branch("TimeOfFlight2", &TimeOfFlight2, "TimeOfFlight2/F");
+  treeout->Branch("TrackLength2", &TrackLength2, "TrackLength2/F");
+  treeout->Branch("Theta2", &Theta2, "Theta2/F");
+  treeout->Branch("Phi2", &Phi2, "Phi2/F");
+  treeout->Branch("UniqueRunId2",&UniqueRunId2,"UniqueRunId2/I");
+  treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
+  treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
+  treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
+
   // fill tree with quality check per run
   Float_t ratePerRun,ratePerRunAll,FractionGoodTrack;
-  Int_t timeduration,runnumber,runnumber2;
+  Int_t timeduration,uniquerunid1,uniquerunid2;
 
   TTree *treeTel1 = new TTree("treeTel1", "run information of telescope 1");
-  // treeTel1->Branch("year", &year, "year/I");
-  // treeTel1->Branch("month", &month, "month/I");
-  // treeTel1->Branch("day", &day, "day/I");
-  treeTel1->Branch("run", &runnumber, "run/I");
+  treeTel1->Branch("uniquerunid1", &uniquerunid1, "uniquerunid1/I");
   treeTel1->Branch("timeduration",&timeduration,"timeduration/I");
   treeTel1->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
   treeTel1->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
   treeTel1->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
 
   TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
-  // treeTel2->Branch("year", &year, "year/I");
-  // treeTel2->Branch("month", &month, "month/I");
-  // treeTel2->Branch("day", &day, "day/I");
-  treeTel2->Branch("run", &runnumber, "run/I");
+  treeTel2->Branch("uniquerunid2", &uniquerunid2, "uniquerunid2/I");
   treeTel2->Branch("timeduration",&timeduration,"timeduration/I");
   treeTel2->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
   treeTel2->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
   treeTel2->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
 
   TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
-  // treeTimeCommon->Branch("year", &year, "year/I");
-  // treeTimeCommon->Branch("month", &month, "month/I");
-  // treeTimeCommon->Branch("day", &day, "day/I");
-  treeTimeCommon->Branch("run", &runnumber, "run/I");
-  treeTimeCommon->Branch("run2", &runnumber2, "run2/I");
+  treeTimeCommon->Branch("uniquerunid1", &uniquerunid1, "uniquerunid1/I");
+  treeTimeCommon->Branch("uniquerunid2", &uniquerunid2, "uniquerunid2/I");
   treeTimeCommon->Branch("timeduration",&timeduration,"timeduration/I");
 
+  //=================================================
   // Fill the infos
+  //=================================================
+
   for(Int_t irun=1; irun<=500; irun++){
     if(htimePerRun1->GetBinContent(irun) > 0){
-      runnumber = irun-1;
+      uniquerunid1 = hUniqueRunIdPerRun1->GetBinContent(irun);
       timeduration = htimePerRun1->GetBinContent(irun);
       ratePerRun = hEventPerRun1->GetBinContent(irun);
       ratePerRunAll = hAllPerRun1->GetBinContent(irun);
@@ -488,7 +538,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
       treeTel1->Fill();
     }
     if(htimePerRun2->GetBinContent(irun) > 0){
-      runnumber = irun-1;
+      uniquerunid2 = hUniqueRunIdPerRun2->GetBinContent(irun);
       timeduration = htimePerRun2->GetBinContent(irun);
       ratePerRun = hEventPerRun2->GetBinContent(irun);
       ratePerRunAll = hAllPerRun2->GetBinContent(irun);
@@ -497,59 +547,25 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     }
   }
 
-  Int_t noverlap[500][500];
-  for(Int_t is=0;is < 500;is++)
-    for(Int_t js=0;js < 500;js++)
-      noverlap[is][js]=0;
-
+  Int_t overlapTime[500][500] = {{},{}};
 
   // count overlapping seconds
   for(Int_t is=1;is<100000;is++){
     if(hexposure1->GetBinContent(is) > 0 && hexposure2->GetBinContent(is) > 0)
-      noverlap[Int_t(hexposure1->GetBinContent(is))][Int_t(hexposure2->GetBinContent(is))]++;
+      overlapTime[Int_t(hexposure1->GetBinContent(is))][Int_t(hexposure2->GetBinContent(is))]++;
   }
 
-
-
-  for(Int_t i=1;i<500;i++){
-    for(Int_t j=1;j<500;j++){
-      if(noverlap[i][j]){
-  	runnumber = i;
-  	runnumber2 = j;
-  	timeduration = noverlap[i][j];
+  for(Int_t irun=1;irun<500;irun++){
+    for(Int_t jrun=1;jrun<500;jrun++){
+      if(overlapTime[irun][jrun]>0){
+  	uniquerunid1 = hUniqueRunIdPerRun1->GetBinContent(irun);
+  	uniquerunid2 = hUniqueRunIdPerRun2->GetBinContent(jrun);
+  	timeduration = overlapTime[irun][jrun];
   	treeTimeCommon->Fill();
       }      
     }
   }
         
-
-  TTree *treeout = new TTree("tree", "Delta T");
-  Int_t e1, e2;	
-  Double_t DiffTime;
-  Float_t ThetaRel;
-  // treeout->Branch("year", &year, "year/I");
-  // treeout->Branch("month", &month, "month/I");
-  // treeout->Branch("day", &day, "day/I");
-  treeout->Branch("ctime1", &ctime1, "ctime1/D");
-  treeout->Branch("ChiSquare1", &ChiSquare1, "ChiSquare1/F");
-  treeout->Branch("TimeOfFlight1", &TimeOfFlight1, "TimeOfFlight1/F");
-  treeout->Branch("TrackLength1", &TrackLength1, "TrackLength1/F");
-  treeout->Branch("Theta1", &Theta1, "Theta1/F");
-  treeout->Branch("Phi1", &Phi1, "Phi1/F");
-  treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
-  treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
-  treeout->Branch("ctime2", &ctime2, "ctime2/D");
-  treeout->Branch("ChiSquare2", &ChiSquare2, "ChiSquare2/F");
-  treeout->Branch("TimeOfFlight2", &TimeOfFlight2, "TimeOfFlight2/F");
-  treeout->Branch("TrackLength2", &TrackLength2, "TrackLength2/F");
-  treeout->Branch("Theta2", &Theta2, "Theta2/F");
-  treeout->Branch("Phi2", &Phi2, "Phi2/F");
-  treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
-  treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
-  treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
-  treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
-
-
   //=================================================
   // Correlation loop
   //=================================================  
@@ -868,7 +884,6 @@ void correlation_EEE3(const char *mydata,Double_t DiffCut)
 	treeout->Branch("ThetaRel12", &ThetaRel, "ThetaRel12/F");
 	treeout->Branch("ThetaRel13", &ThetaRelB, "ThetaRel13/F");
 	treeout->Branch("ThetaRel23", &ThetaRelC, "ThetaRel23/F");
-
 
 	for(e1 = 0; e1 < nent1; e1++) {
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
