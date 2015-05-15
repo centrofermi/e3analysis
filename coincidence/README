@@ -1,5 +1,6 @@
 Macro to perform coincidences studies (Catania code: F. Riggi and P. La Rocca)
 
+1st option) 
 Input: a daily DST file for two telescopes
 Ouput: a ROOT file with a TREE
 
@@ -14,6 +15,7 @@ contains the setting:
 The macro can be simply run in this way
 root correlation_EEE.C
 
+2nd option)
 Alternativelly, if you are running at CNAF, you can compile the macro which automatically run on all the runs of a day
 To compile run:
 ./compileClass
@@ -29,8 +31,20 @@ or
 [add the date if you want to replace the one in the config file, to be replaced as in the two coindicences case]
 
 
-
 Also macro for autocorrelation was added to perform analysis in a single telescope looking at correlation of different triggered events.
 The same config file as for the two coindences studies should be used
 
+3rd option)
+You can coplile the coincidence macroes including the access to the db
+a) compile dbcon dir before to proceed here
+b) ./configure (only the first time)
+c) make
+
+./coincAtCnaf.exe VIAR-01,VIAR-02 2015-05-01
+to run the analysis on two telescopes for a given day
+
+
+-------------------
+
 Documentation (PDF files) in "doc" dir provided by P. La Rocca
+
