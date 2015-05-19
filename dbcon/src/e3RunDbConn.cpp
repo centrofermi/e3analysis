@@ -70,7 +70,7 @@ void e3RunDbConn::CloseConn(){
 
 // e3RunDbConn GetRunList member function
 //------------------------------------------------------------
-int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID, const string tWinLowStr, const string tWinUpStr, unsigned int outFormat){
+int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID, const string tWinLowStr, const string tWinUpStr, const string whereClausesStr, unsigned int outFormat){
 
   //***************************
   //Time window limit
@@ -91,7 +91,7 @@ int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID
 
   _tWinLow.tm_year -= 1900;
   _tWinLow.tm_mon --;
-  time_t _tWinLowTime = mktime(&_tWinLow) - timezone; 
+  time_t _tWinLowTime = mktime(&_tWinLow) - timezone -_overtime; 
   double _tWinLowSec = difftime(_tWinLowTime,_e3StartTime);
 
   struct tm _tWinUp;
@@ -107,8 +107,20 @@ int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID
 
   _tWinUp.tm_year -= 1900;
   _tWinUp.tm_mon --;
-  time_t _tWinUpTime = mktime(&_tWinUp) - timezone; 
+  time_t _tWinUpTime = mktime(&_tWinUp) - timezone + _overtime; 
+  if(tWinUpStr == tWinLowStr) _tWinUpTime += 24*60*60; //Whole day if low time and up time are the same
   double _tWinUpSec = difftime(_tWinUpTime,_e3StartTime);
+
+  //***************************
+  //WHERE clauses
+  //***************************
+  string _clause;
+  vector<string> _whereClauses; 
+  istringstream _iss(whereClausesStr);
+  while(getline(_iss, _clause, ',')){
+    if(!_clause.empty())
+    _whereClauses.push_back(_clause);
+  }
 
   //***************************
   //Output format options
@@ -126,7 +138,9 @@ int e3RunDbConn::GetRunList(vector<string>& fileNameList, const string stationID
   _queryStr<<"WHERE station_name='"<<stationID<<"' ";
   _queryStr<<"AND run_start>="<<fixed<<_tWinLowSec<<" ";
   _queryStr<<"AND run_stop<"<<fixed<<_tWinUpSec<<" ";
-  // _queryStr<<"LIMIT 2";
+  for (vector<string>::iterator it = _whereClauses.begin(); it!=_whereClauses.end(); ++it){
+    _queryStr<<"AND "<<*it<<" ";
+  }
 
   if(_vLevel>1) cout<<"[e3RunDbConn::GetRunList - INFO] Performing query: "<<_queryStr.str()<<endl;
 

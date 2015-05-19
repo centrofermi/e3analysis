@@ -14,11 +14,17 @@
 #include <iostream>
 #include <iomanip>
 
+//!  getTimeWindowLimits function.
+/*!
+  if TimeLow==TimeUp ....
+ */
+void getTimeWindowLimits(const string, const string, time_t &,  time_t&);
+
 //!  calculateThetaPhi function.
 /*!
   Calculate Theta and Phi
  */
-void calculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
+void calculateThetaPhi(Float_t&, Float_t&, Float_t&, Float_t&, Float_t&);
 
 //! correlation_EEE function.
 /*!
@@ -28,7 +34,9 @@ void calculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Flo
 
   Data are read from the two ROOT trees created for each telescope
 */
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t DiffCut = 0.1);
+void correlation_EEE(int, double = 0.1, bool = kFALSE, const char * = NULL, 
+		     const char * = NULL, const char * = NULL, 
+		     const char * = NULL, const char * = NULL);
 
 //! correlation_EEE3 function.
 /*!

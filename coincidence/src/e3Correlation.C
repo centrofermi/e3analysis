@@ -27,12 +27,13 @@ using namespace std;
 
 // correlation_EEE function
 //------------------------------------------------------------
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool usedb,Double_t DiffCut)
-{
+void correlation_EEE(int myvlevel, double DiffCut,  bool usedb, const char *mydata, 
+		     const char *mysc1, const char *mysc2, 
+		     const char *mypath, const char *myclauses){
 
   int _status=0;        ///< Process status
   int _ret=0;         
-  int _vLevel=0;      ///< Verbosity level
+  int _vLevel=myvlevel;      ///< Verbosity level
 
   TStopwatch _timer;
   _timer.Start();
@@ -41,6 +42,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   const char *tel_code2;
   tel_code1 = mysc1,tel_code2 = mysc2;
   const char *path=mypath;
+  const string clauses=myclauses;
 
   e3RunDbConn *_mysqlCon = NULL;
 
@@ -72,6 +74,25 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   TH1F *hGoodTrackPerRun1 = new TH1F("hGoodTrackPerRun1","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 1;Run number;Fraction of Good Tracks",500,0,500);
   TH1F *hGoodTrackPerRun2 = new TH1F("hGoodTrackPerRun2","Fraction of good tracks (#Chi^{2} < 10) per Run telescope 2;Run number;Fraction of Good Tracks",500,0,500);
 
+  //======================================== 
+  // Get date-time window up/low times
+  //========================================  
+  
+  string _dtWinLow, _dtWinUp;
+  istringstream _iss(mydata);
+  vector<string> _fileNameList;
+  
+  getline(_iss, _dtWinLow, '/');
+  getline(_iss, _dtWinUp);
+  if(_dtWinUp.empty()){
+    
+    _dtWinLow = _dtWinLow.substr(0,_dtWinLow.find("_"));
+    _dtWinLow.append("_00:00:00");
+    _dtWinUp = _dtWinLow;
+
+  }
+
+
   if(usedb){
 
     //======================================== 
@@ -80,6 +101,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     
     _mysqlCon = new e3RunDbConn("131.154.96.193","eee","eee-monitoring","eee_rundb2");
     _mysqlCon->SetVerbosity(_vLevel); //VLEVEL
+    cout<<_vLevel<<endl;
     _mysqlCon->Init();
 
     //======================================== 
@@ -87,25 +109,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     //========================================  
     
     string STATIONID;
-    string _dtWinLow, _dtWinUp;
-    istringstream _iss(mydata);
-    vector<string> _fileNameList;
 
-    getline(_iss, _dtWinLow, '/');
-    getline(_iss, _dtWinUp);
-    if(_dtWinUp.empty()){
-      
-      _dtWinLow = _dtWinLow.substr(0,_dtWinLow.find("_"));
-      cout<<"[e3Correlation.correlation_EEE - WARNING] ALL the runs collected on "<<_dtWinLow<<" will be analysed"<<endl;
-      _dtWinLow.append("_00:00:00");
-      _dtWinUp = _dtWinLow;
-      int day = atoi(_dtWinLow.substr(_dtWinLow.find("_")-2,2).c_str());
-      stringstream  buffer; buffer.fill('0'); buffer<<setw(2)<<(day+1);
-      _dtWinUp.replace(_dtWinUp.find("_")-2,2,buffer.str().c_str());
-    }
+    if(_dtWinLow == _dtWinUp) if(_vLevel>0) cout<<"[e3Correlation.correlation_EEE - WARNING] ALL the runs collected on "<<_dtWinLow<<" will be analysed"<<endl;
+
+    _mysqlCon->SetOvertime(2);  //Set overtime in the timewindow in hours 
 
     _fileNameList.clear(); STATIONID=mysc1;
-    if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,1)!=0){
+    if(_mysqlCon->GetRunList(_fileNameList, STATIONID, _dtWinLow, _dtWinUp, clauses, 1)!=0){
       exit(EXIT_FAILURE);
     }
     else{
@@ -119,7 +129,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     }
 
     _fileNameList.clear(); STATIONID=mysc2;
-    if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,1)!=0){
+    if(_mysqlCon->GetRunList(_fileNameList, STATIONID, _dtWinLow, _dtWinUp, clauses, 1)!=0){
       exit(EXIT_FAILURE);
     }
     else{
@@ -152,9 +162,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     cout<<"[e3Correlation.correlation_EEE - WARNING] Using <file_list> option ALL the runs collected on "<<date
 	<<" will be analysed."<<endl; 
         
-    // Int_t year,month,day;
-    // sscanf(date,"%d-%d-%d",&year,&month,&day);
-
     //========================================  
     // Create run lists
     //========================================  
@@ -275,12 +282,17 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   e3start.tm_hour = 0; e3start.tm_min = 0; e3start.tm_sec = 0; e3start.tm_isdst = 0;
   e3start.tm_year = 107; e3start.tm_mon = 0; e3start.tm_mday = 1;
   time_t e3starttime = mktime(&e3start) - timezone; 
-  time_t eventtime;
+  time_t eventtime, winlowtime, winuptime;
+
+  cout<<_dtWinLow<<" "<<_dtWinUp<<endl;
+  getTimeWindowLimits(_dtWinLow,_dtWinUp,winlowtime,winuptime);
+
   Int_t i1 = 0;StatusCode1=1;
   while(StatusCode1) {
     t1->GetEntry(        i1); 
     ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
-    t1min = ctime1;
+    if( (ctime1 + e3starttime) < winlowtime ){ StatusCode1 = 1;  }
+    else t1min = ctime1;
     i1++;
   }
   eventtime = e3starttime + Seconds1; 
@@ -294,7 +306,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   while(StatusCode1) {
     t1->GetEntry( i1);
     ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
-    t1max = ctime1;
+    if( (ctime1 + e3starttime) > winuptime ){ StatusCode1 = 1;  }
+    else t1max = ctime1;
     i1--;
   }
   eventtime = e3starttime + Seconds1; 
@@ -309,7 +322,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   while(StatusCode2) {
     t2->GetEntry(        i2);
     ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09;
-    t2min = ctime2;
+    if( (ctime2 + e3starttime) < winlowtime ){ StatusCode2 = 1;  }
+    else t2min = ctime2;
     i2++;
   }
   eventtime = e3starttime + Seconds2; 
@@ -322,7 +336,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   while(StatusCode2) {
     t2->GetEntry(i2); 
     ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; 
-    t2max = ctime2;
+    if( (ctime2 + e3starttime) > winuptime ){ StatusCode2 = 1;  }
+    else t2max = ctime2;
     i2--;
   }
   eventtime = e3starttime + Seconds2; 
@@ -357,6 +372,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   cUniqueRunId=0, cbin=0;
   for(Int_t e1=0; e1<nent1; e1++) {
     t1->GetEntry(e1);
+    ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
+    if( (ctime1 + e3starttime) < winlowtime || (ctime1 + e3starttime) >= winuptime ){ continue;  }
+
     if(UniqueRunId1!=cUniqueRunId){ 
       // cout<<cUniqueRunId<<" - "<<UniqueRunId1<<" i.e. "
       // 	  <<" STATIONID "<<(Int_t) (UniqueRunId1/1E9)<<" - "
@@ -390,6 +408,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   cUniqueRunId=0; cbin=0;
   for(Int_t e2=0; e2<nent2; e2++) {
     t2->GetEntry(e2);
+    ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09;
+    if( (ctime2 + e3starttime) < winlowtime || (ctime2 + e3starttime) >= winuptime ){ continue;  }
+
     if(UniqueRunId2!=cUniqueRunId){ 
       cbin++; 
       cUniqueRunId=UniqueRunId2; 
@@ -412,7 +433,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
    
     if(hexposure2->GetBinContent(i) > 0)
       htimePerRun2->Fill(hexposure2->GetBinContent(i));
-
   }
 
   hAllPerRun1->Divide(htimePerRun1);
@@ -465,6 +485,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
   for (Int_t i = 0; i < nent2; i++) {
     t2->GetEntry(i);
     ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09;
+    if( (ctime2 + e3starttime) < winlowtime || (ctime2 + e3starttime) >= winuptime ){ continue;  }
+
     cellIndex = (Int_t)((ctime2 - tmin) / DiffCut);
     if (cellIndex >= 0 && cellIndex < ncells) {
       size = cell[cellIndex].GetSize();
@@ -592,9 +614,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     }
 
     t1->GetEntry(e1);
+    ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
+    if( (ctime1 + e3starttime) < winlowtime || (ctime1 + e3starttime) >= winuptime ){ continue;  }
+
     // Calculate Theta1, Phi1
     calculateThetaPhi(XDir1, YDir1, ZDir1, Theta1, Phi1);
-    ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
     cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
 
     for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
@@ -605,6 +629,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
     	e2 = cell[i].At(j);
     	t2->GetEntry(e2); 
     	ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; 
+	if( (ctime2 + e3starttime) < winlowtime || (ctime2 + e3starttime) >= winuptime ){ continue;  }
 
     	//DiffTime= ctime1 - ctime2;    
     	if((Seconds1-Seconds2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
@@ -1168,6 +1193,40 @@ void correlation_EEEAC(const char *mydata,Double_t DiffCut)
 	fileout->Close();
 	cout<<"Correlation tree completed"<<endl;
 	
+}
+
+//  getTimeWindowLimits function
+//------------------------------------------------------------
+void getTimeWindowLimits(const string myWinLowStr, const string myWinUpStr, time_t &myWinLowTime,  time_t &myWinUpTime){
+
+    char dummy;
+    stringstream lineStream;
+    
+    struct tm _dtWinLow;
+    memset(&_dtWinLow, 0, sizeof _dtWinLow);  // set all fields to 0
+    lineStream.str(myWinLowStr);
+    
+    // Parse the input and store each value into the correct variables.
+    lineStream >> _dtWinLow.tm_year >> dummy >> _dtWinLow.tm_mon >> dummy >> _dtWinLow.tm_mday >> dummy >> _dtWinLow.tm_hour >> dummy >> _dtWinLow.tm_min >> dummy >> _dtWinLow.tm_sec;
+    
+    _dtWinLow.tm_year -= 1900;
+    _dtWinLow.tm_mon --;
+    myWinLowTime = mktime(&_dtWinLow) - timezone; 
+
+    struct tm _dtWinUp;
+    memset(&_dtWinUp, 0, sizeof _dtWinUp);  // set all fields to 0
+    lineStream.clear();
+    lineStream.str(myWinUpStr);
+    // Parse the input and store each value into the correct variables.
+    lineStream >> _dtWinUp.tm_year >> dummy >> _dtWinUp.tm_mon >> dummy >> _dtWinUp.tm_mday >> dummy >> _dtWinUp.tm_hour >> dummy >> _dtWinUp.tm_min >> dummy >> _dtWinUp.tm_sec;
+    
+    _dtWinUp.tm_year -= 1900;
+    _dtWinUp.tm_mon --;
+    myWinUpTime = mktime(&_dtWinUp) - timezone; 
+    if(myWinUpStr == myWinLowStr) myWinUpTime += 24*60*60; //Whole day if low time and up time are the same
+
+    return;
+   
 }
 
 //  calculateThetaPhi function

@@ -43,6 +43,7 @@ class e3RunDbConn{
 
   struct tm _e3Start;
   time_t _e3StartTime;
+  int _overtime;
 
   void finish_with_error();
 
@@ -93,12 +94,10 @@ class e3RunDbConn{
     Get run list in a spiecified time window.
 
    */
-  int GetRunList(vector<string>&, const string, const string, const string, unsigned int);
+  int GetRunList(vector<string>&, const string, const string, const string, const string, unsigned int);
 
-
-  inline void SetVerbosity(unsigned int vLevel){ _vLevel = vLevel; };
-
-
+  inline void SetOvertime(unsigned int overtime){ _overtime = overtime; _overtime*=(60*60); };      //!< Set overtime for timewindow search (in hours)
+  inline void SetVerbosity(unsigned int vLevel){ _vLevel = vLevel; };                //!< Set verbosity level
 
 
 /*  private: */

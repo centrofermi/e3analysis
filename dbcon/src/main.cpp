@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   getline(_iss, _dtWinLow, '/');
   getline(_iss, _dtWinUp);
   vector<string> _fileNameList;
-  if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,1)!=0)
+  if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,"",1)!=0)
     exit(EXIT_FAILURE);
 
   cout<<"[e3RunDbConn::GetRunList - INFO] Query results:"<<endl;

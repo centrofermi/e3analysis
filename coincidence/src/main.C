@@ -39,10 +39,12 @@ enum STATUS {
   BAD_STAT=0x00
 };
 
-bool USEDB;
-string STATIONIDS;
 string DATETIMEWIN;
 string DSTPATH;
+string STATIONIDS;
+bool USEDB, USECLAUSES;
+int VLEVEL;
+string WHERECLAUSES;
 
 int GetUserOpt(int, char**);
 
@@ -59,8 +61,9 @@ int main(int argc,char *argv[]){
   // Set default values
   //========================================  
 
-  USEDB = kTRUE;
   DSTPATH = "/recon";
+  VLEVEL = 0;
+  USEDB = kTRUE; USECLAUSES = kFALSE;
 
   //======================================== 
   // Parse inline command options
@@ -84,16 +87,24 @@ int main(int argc,char *argv[]){
     exit(EXIT_FAILURE);
   }
 
-  // printf("list of options to overwrite the config file infos:\n");
-  // printf("-d DATE = to pass the date from line command\n");
-  // printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
-  // printf("-p PATH = to pass the path of the reco dirs");
-
-  // int kNoConfigFile = 0;
-
-  correlation_EEE(DATETIMEWIN.c_str(),_tel1.c_str(),_tel2.c_str(),DSTPATH.c_str(),USEDB);
+  //Additional where clauses
+  if(!USECLAUSES) WHERECLAUSES="";
+  else if(USECLAUSES && strcmp(WHERECLAUSES.c_str(),"def")==0){
+    WHERECLAUSES = "";
+    WHERECLAUSES.append("(num_track_events / num_events) >= 0.9,");                                    // fraction of good tracks 
+    WHERECLAUSES.append("num_events >= 10000,");                                                                    // number of events
+    WHERECLAUSES.append(" 20 <= num_events / (run_stop - run_start) <= 60,");                       // rate
+    WHERECLAUSES.append("run_id<500,");                                                                                       // max number of runs per day
+    WHERECLAUSES.append("-1 < (( num_events - num_hit_events ) / num_events) < 1,");        // missing hits fraction
+  }
+  
+  //Correlate events
+  correlation_EEE( VLEVEL, 0.1, USEDB, 
+		   DATETIMEWIN.c_str(), _tel1.c_str(), _tel2.c_str(), 
+		  DSTPATH.c_str(), WHERECLAUSES.c_str());
 
   return 0;
+
 }
 
 //!AnyOption Interface function.
@@ -112,10 +123,10 @@ int GetUserOpt(int argc, char* argv[]){
   opt->addUsage( "Usage: coincAtCnaf.exe [options] [arguments]" );
   opt->addUsage( "" );
   opt->addUsage( "Options: " );
-  opt->addUsage( "  -h, --help               Print this help " );
-  opt->addUsage( "  -l, --file_list               Read DST file list from external file " );
-  // opt->addUsage( "  -s, --host <hostname>   Insert mysql server hostname or ip address" );
-  // opt->addUsage( "  -v, --verbose <vlevel>   Change verbosity level" );
+  opt->addUsage( "  -h, --help                        Print this help " );
+  opt->addUsage( "  -l, --file_list                     Read DST file list from external file " );
+  opt->addUsage( "  -v, --verbose <vlevel>   Change verbosity level" );
+  opt->addUsage("  -w, --where_clauses  <wclauses>    Additional clauses on run list query (syntax: \"col_name(cond)VALUE,...\"");
   opt->addUsage( "" );
   opt->addUsage( "Arguments: " );
   opt->addUsage( "  StationIDs               Telescope list (comma separated, 2 IDs required)" );
@@ -127,8 +138,9 @@ int GetUserOpt(int argc, char* argv[]){
 
   opt->setFlag( "help", 'h' );  
   opt->setFlag( "file_list", 'l' );  
-  // opt->setOption( "host", 's' );
-  // opt->setOption( "verbose", 'v' );
+
+  opt->setOption( "where_clauses", 'w' );  
+   opt->setOption( "verbose", 'v' );
 
   opt->processCommandArgs( argc, argv );      // go through the command line and get the options 
 
@@ -147,9 +159,14 @@ int GetUserOpt(int argc, char* argv[]){
     USEDB=kFALSE;
   }
 
-  // if( opt->getValue( "verbose" ) != NULL ){
-  //   VLEVEL=atoi(opt->getValue( "verbose" )); 
-  // }
+  if( opt->getValue( "where_clauses" ) || opt->getFlag( 'f' ) ){
+    USECLAUSES=kTRUE;
+    WHERECLAUSES=opt->getValue( "where_clauses" ); 
+  }
+
+  if( opt->getValue( "verbose" ) != NULL ){
+    VLEVEL=atoi(opt->getValue( "verbose" )); 
+  }
 
   switch(opt->getArgc()){                                   //get the actual arguments after the options
 
