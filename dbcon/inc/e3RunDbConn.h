@@ -96,39 +96,16 @@ class e3RunDbConn{
    */
   int GetRunList(vector<string>&, const string, const string, const string, const string, unsigned int);
 
+  //! Get daq configuration
+  /*!
+
+    Get the daq parameter of a specific telescope for a specific date-time.
+
+   */
+  int GetDaqConf(vector<string>&, const string, const string, const string);
+
   inline void SetOvertime(unsigned int overtime){ _overtime = overtime; _overtime*=(60*60); };      //!< Set overtime for timewindow search (in hours)
   inline void SetVerbosity(unsigned int vLevel){ _vLevel = vLevel; };                //!< Set verbosity level
-
-
-/*  private: */
-  
-/*   unsigned int _vlevel;   //!< Verbosity Level */
-/*   string _rootfile_name;  //!< default name of the AMS ROOT file needed by the Init member */
-/*   unsigned int _runid; */
-
-/*   float _grmedphi;   */
-/*   TStopwatch timer; */
-
-/*   int LoadISSAtt(unsigned int t1, unsigned int t2); */
-/*   int getISSAtt(float &roll, float &pitch, float &yaw, double xtime); */
-
-/*   //! SAMSEventR LoadLiveTime member function */
-/*   /\*! */
-/*     \brief Load data from Live-Time files created analysing HK data stream */
-
-/*     \retval 0 if all entries in the specified time interval have been correctly loaded */
-/*     \retval 1 if the end of the specified time interval has not been found */
-/*     \retval 2 if no entries for the specified time interval has been loaded */
-/*    *\/ */
-/*   int LoadLiveTime(unsigned int t1, unsigned int t2); */
-  
-/*   //! SAMSEventR LoadRunSum member function */
-/*   /\*! */
-/*     \retval 0 if all entries in the specified time interval have been correctly loaded */
-/*     \retval 1 if the end of the specified time interval has not been found */
-/*     \retval 2 if no entries for the specified time interval has been loaded */
-/*    *\/ */
-/*   int LoadRunSum(unsigned int t1, unsigned int t2); */
 
 };
 

@@ -30,6 +30,7 @@ enum STATUS {
 int VLEVEL = 0;
 string STATIONID;
 string DATETIMEWIN;
+string DAQCONFLIST;
 
 int GetUserOpt(int, char**);
 
@@ -67,9 +68,9 @@ int main(int argc, char *argv[]) {
   //========================================  
 
   string _dtWinLow, _dtWinUp;
-  istringstream _iss(DATETIMEWIN);
-  getline(_iss, _dtWinLow, '/');
-  getline(_iss, _dtWinUp);
+  istringstream _dtIss(DATETIMEWIN);
+  getline(_dtIss, _dtWinLow, '/');
+  getline(_dtIss, _dtWinUp);
   vector<string> _fileNameList;
   if(_mysqlCon->GetRunList(_fileNameList,STATIONID,_dtWinLow,_dtWinUp,"",1)!=0)
     exit(EXIT_FAILURE);
@@ -77,6 +78,21 @@ int main(int argc, char *argv[]) {
   cout<<"[e3RunDbConn::GetRunList - INFO] Query results:"<<endl;
   /* Print _fileNameList vector to console */
   copy(_fileNameList.begin(), _fileNameList.end(), ostream_iterator<string>(cout, "\n"));
+
+  //======================================== 
+  // Get daq configuration
+  //========================================  
+
+  string _dateTime;
+  istringstream _daqIss(DATETIMEWIN);
+  getline(_daqIss, _dateTime, '/');
+  vector<string> _parList;
+  if(_mysqlCon->GetDaqConf(_parList,STATIONID,_dateTime,DAQCONFLIST)!=0)
+    exit(EXIT_FAILURE);
+
+  cout<<"[e3RunDbConn::GetDaqConf - INFO] Query results:"<<endl;
+  /* Print _parList vector to console */
+  copy(_parList.begin(), _parList.end(), ostream_iterator<string>(cout, "\n"));
 
   //======================================== 
   // Close db connection
@@ -106,13 +122,13 @@ int GetUserOpt(int argc, char* argv[]){
   opt->addUsage( "" );
   opt->addUsage( "Options: " );
   opt->addUsage( "  -h, --help               Print this help " );
-  opt->addUsage( "  -s, --host <hostname>   Insert mysql server hostname or ip address" );
+  opt->addUsage( "  -s, --host <hostname>    Insert mysql server hostname or ip address" );
   opt->addUsage( "  -v, --verbose <vlevel>   Change verbosity level" );
   opt->addUsage( "" );
   opt->addUsage( "Arguments: " );
-  opt->addUsage( "  StationID               Telescope name" );
-  opt->addUsage( "  DateTimeWindows              UTC Date&Time Interval(format: YYYY-MM-DD_hh:mm:ss/YYYY- MM-DD_hh:mm:ss)" );
-  opt->addUsage( "" );
+  opt->addUsage( "  StationID                Telescope name" );
+  opt->addUsage( "  DateTimeWindows          UTC Date&Time Interval(format: YYYY-MM-DD_hh:mm:ss/YYYY- MM-DD_hh:mm:ss)" );
+  opt->addUsage( "  DAQConfList              List of daq parameters name (format: comma separated values)" );
   //opt->addUsage( "Notes: ");
   //opt->addUsage( "" );
 
@@ -139,11 +155,17 @@ int GetUserOpt(int argc, char* argv[]){
 
   switch(opt->getArgc()){                                   //get the actual arguments after the options
 
+  case 3: 
+    STATIONID = opt->getArgv(0);
+    DATETIMEWIN = opt->getArgv(1);
+    DAQCONFLIST = opt->getArgv(2);
+    break;
+    
   case 2: 
     STATIONID = opt->getArgv(0);
     DATETIMEWIN = opt->getArgv(1);
     break;
-    
+
   // case 1: 
   //   DTINTERVAL = opt->getArgv(0);
   //   break;
