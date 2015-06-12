@@ -275,7 +275,8 @@ int e3RunDbConn::GetDaqConf(vector<string>& parValueList, const string stationID
   unsigned int irow=0;
   while ((_dbRow = mysql_fetch_row(_queryRes))) 
     { 
-      
+
+      irow++;
       if(_vLevel>5){
 	for(unsigned int ifield = 0; ifield <mysql_num_fields(_queryRes); ifield++)
 	  {
@@ -284,7 +285,6 @@ int e3RunDbConn::GetDaqConf(vector<string>& parValueList, const string stationID
 	    
 	  }
 	cout<<endl;
-	irow++;
       }
 
       stringstream _parValue;
@@ -299,7 +299,12 @@ int e3RunDbConn::GetDaqConf(vector<string>& parValueList, const string stationID
 
       
     }
-  
+ 
+  if(irow>1){
+    cerr << "[e3RunDbConn::GetDaqConf - ERROR] More than one valid configuration found for the selected date-time." << endl;
+    return 1;
+  }
+
   mysql_free_result(_queryRes);
 
   return 0;
