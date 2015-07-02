@@ -13,7 +13,7 @@ for station in STATIONS:
     t = f.Get('Events')
     outputFile.cd()
     hname = 'hchisquare_%s' % station
-    hchisquare = ROOT.TH1F(hname, station, 100, 0, 10)
+    hchisquare = ROOT.TH1F(hname, station, 2000, 0, 10)
     hchisquare.SetXTitle('#chi^{2}')
     hchisquare.SetYTitle('Entries/bin')
     t.Project(hname, 'ChiSquare', CUT_EXPR)
