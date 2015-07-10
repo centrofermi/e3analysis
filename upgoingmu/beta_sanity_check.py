@@ -12,6 +12,7 @@ for station in STATIONS:
     f = ROOT.TFile(filePath)
     t = f.Get('Events')
     outputFile.cd()
+    # Beta (and beta^-1) distributions.
     hname = 'hbeta_%s' % station
     hbeta = ROOT.TH1F(hname, station, 200, 0, 3)
     hbeta.SetXTitle('#beta')
@@ -28,6 +29,7 @@ for station in STATIONS:
     print 'Writing %s...' % hname
     hbetainv.Write()
     print 'Done.'
+    # Beta (and beta^-1) distributions as a function of theta.
     hname = 'hbetazdir_%s' % station
     hbetazdir = ROOT.TH2F(hname, station, 100, 0, 1, 100, 0, 3)
     hbetazdir.SetXTitle('cos(#theta)')
@@ -44,6 +46,25 @@ for station in STATIONS:
     print 'Writing %s...' % hname
     hbetazdirinv.Write()
     print 'Done.'
+    # Beta (and beta^-1) distributions for upward-going particles from muon
+    # decay.
+    hname = 'hbetadaughters_%s' % station
+    hbetadaughters = ROOT.TH1F(hname, station, 200, -3, 0)
+    hbetadaughters.SetXTitle('#beta')
+    hbetadaughters.SetYTitle('Entries/bin')
+    t.Project(hname, BETA_EXPR, DAUGHTER_CUT_EXPR)
+    print 'Writing %s...' % hname
+    hbetadaughters.Write()
+    print 'Done.'
+    hname = 'hbetadaughtersinv_%s' % station
+    hbetadaughtersinv = ROOT.TH1F(hname, station, 200, -3, 0)
+    hbetadaughtersinv.SetXTitle('1/#beta')
+    hbetadaughtersinv.SetYTitle('Entries/bin')
+    t.Project(hname, '1./(%s)' % BETA_EXPR, DAUGHTER_CUT_EXPR)
+    print 'Writing %s...' % hname
+    hbetadaughtersinv.Write()
+    print 'Done.'
+    
     f.Close()
 
 print 'Closing output file...'
