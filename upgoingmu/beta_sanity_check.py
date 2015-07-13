@@ -29,6 +29,23 @@ for station in STATIONS:
     print 'Writing %s...' % hname
     hbetainv.Write()
     print 'Done.'
+    # Beta (and beta^-1) distributions for straight tracks.
+    hname = 'hbetastraight_%s' % station
+    hbeta = ROOT.TH1F(hname, station, 200, 0, 3)
+    hbeta.SetXTitle('#beta')
+    hbeta.SetYTitle('Entries/bin')
+    t.Project(hname, BETA_EXPR, CUT_EXPR)
+    print 'Writing %s...' % hname
+    hbeta.Write()
+    print 'Done.'
+    hname = 'hbetastraightinv_%s' % station
+    hbetainv = ROOT.TH1F(hname, station, 200, 0, 3)
+    hbetainv.SetXTitle('1/#beta')
+    hbetainv.SetYTitle('Entries/bin')
+    t.Project(hname, '1./(%s)' % BETA_EXPR, STRAIGHT_CUT_EXPR)
+    print 'Writing %s...' % hname
+    hbetainv.Write()
+    print 'Done.'
     # Beta (and beta^-1) distributions as a function of theta.
     hname = 'hbetazdir_%s' % station
     hbetazdir = ROOT.TH2F(hname, station, 100, 0, 1, 100, 0, 3)
