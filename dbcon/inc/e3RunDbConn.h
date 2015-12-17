@@ -88,6 +88,14 @@ class e3RunDbConn{
    */
   void CloseConn();
 
+  //! Get telescope list
+  /*!
+
+    Get telescope list in a spiecified time window.
+
+   */
+  int GetTelescopeList(vector<string>&, const string);
+
   //! Get run list
   /*!
 
@@ -103,6 +111,33 @@ class e3RunDbConn{
 
    */
   int GetDaqConf(vector<string>&, const string, const string, const string);
+
+  //! Get daq configurations list
+  /*!
+
+    Get the list of daq configurations of a specific telescope in a specified time window.
+  
+    Current daq_configurations table in runDB:
+
+    +-----------------+---------------------+------+-----+---------+----------------+
+    | Field           | Type                | Null | Key | Default | Extra          |
+    +-----------------+---------------------+------+-----+---------+----------------+
+    | id              | int(11) unsigned    | NO   | PRI | NULL    | auto_increment |
+    | gps_latitude    | float               | YES  |     | NULL    |                |
+    | gps_longitude   | float               | YES  |     | NULL    |                |
+    | gps_altitude    | float               | YES  |     | NULL    |                |
+    | mrpc12_distance | float               | YES  |     | NULL    |                |
+    | mrpc23_distance | float               | YES  |     | NULL    |                |
+    | magnorth_angle  | float               | YES  |     | NULL    |                |
+    | geonorth_angle  | float               | YES  |     | NULL    |                |
+    | valid_from      | datetime            | YES  |     | NULL    |                |
+    | valid_until     | datetime            | YES  |     | NULL    |                |
+    | telescope_id    | tinyint(3) unsigned | NO   |     | NULL    |                |
+    +-----------------+---------------------+------+-----+---------+----------------+
+
+  */
+  int GetDaqConfList(vector<string>&, const string, const string, const string, const string);
+
 
   inline void SetOvertime(unsigned int overtime){ _overtime = overtime; _overtime*=(60*60); };      //!< Set overtime for timewindow search (in hours)
   inline void SetVerbosity(unsigned int vLevel){ _vLevel = vLevel; };                //!< Set verbosity level
