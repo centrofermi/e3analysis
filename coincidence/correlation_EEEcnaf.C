@@ -49,9 +49,9 @@ int main(int argc,char *argv[]){
   printf("list of options to overwrite the config file infos:\n");
   printf("-d DATE = to pass the date from line command\n");
   printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
-  printf("-p PATH = to pass the path of the reco dirs");
-  printf("-delay1 time_delay = time delay of telescope1 in seconds");
-  printf("-delay2 time_delay = time delay of telescope2 in seconds");
+  printf("-p PATH = to pass the path of the reco dirs\n");
+  printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
+  printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
 
   int kNoConfigFile = 0;
 
@@ -94,7 +94,8 @@ int main(int argc,char *argv[]){
         printf("time delay (tel1) missing\n");
         return 1;
       }
-
+      sscanf(argv[i+1],"%lf",&delay1);
+      printf("Add a time delay for telescope1 of %f s\n",delay1);
       i++;  
     }
 
@@ -103,6 +104,8 @@ int main(int argc,char *argv[]){
         printf("time delay (tel2) missing\n");
         return 1;
       }
+      sscanf(argv[i+1],"%lf",&delay2);
+      printf("Add a time delay for telescope2 of %f s\n",delay2);
 
       i++;  
     }
