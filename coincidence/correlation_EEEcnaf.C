@@ -34,7 +34,7 @@
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t DiffCut = 0.1);
+void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1);
 
 int main(int argc,char *argv[]){
 
@@ -43,10 +43,15 @@ int main(int argc,char *argv[]){
   char *sc2 = NULL;
   char *path = NULL;
 
+  Double_t delay1=0;
+  Double_t delay2=0;
+
   printf("list of options to overwrite the config file infos:\n");
   printf("-d DATE = to pass the date from line command\n");
   printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
   printf("-p PATH = to pass the path of the reco dirs");
+  printf("-delay1 time_delay = time delay of telescope1 in seconds");
+  printf("-delay2 time_delay = time delay of telescope2 in seconds");
 
   int kNoConfigFile = 0;
 
@@ -84,15 +89,33 @@ int main(int argc,char *argv[]){
       kNoConfigFile++;
     }
 
+   if(CfrString(argv[i],"-deltay1")){
+      if(i+1 > argc){
+        printf("time delay (tel1) missing\n");
+        return 1;
+      }
+
+      i++;  
+    }
+
+   if(CfrString(argv[i],"-deltay2")){
+      if(i+1 > argc){
+        printf("time delay (tel2) missing\n");
+        return 1;
+      }
+
+      i++;  
+    }
+
   }
 
-  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3);
+  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2);
 
   return 0;
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t DiffCut)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t delay1,Double_t delay2,Double_t DiffCut)
 {
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
@@ -237,21 +260,21 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
         Int_t i1 = 0;StatusCode1=1;
-        while(StatusCode1) {t1->GetEntry(        i1); ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09; t1min = ctime1;i1++;}
-        cout << "start " << Seconds1 << endl;        
+        while(StatusCode1) {t1->GetEntry(        i1); ctime1 = (Double_t ) Seconds1 - delay1 + (Double_t ) Nanoseconds1*1E-09; t1min = ctime1;i1++;}
+        cout << "start " << Seconds1 - delay1 << endl;        
 
-        startTime = Seconds1;
+        startTime = Seconds1-delay1;
 
         i1 = nent1 - 5; StatusCode1=1;	
-        while(StatusCode1) {t1->GetEntry( i1); ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09; t1max = ctime1;i1--;}
-        cout << "end " << Seconds1 << " " << StatusCode1 << endl;
+        while(StatusCode1) {t1->GetEntry( i1); ctime1 = (Double_t ) Seconds1 - delay1 + (Double_t ) Nanoseconds1*1E-09; t1max = ctime1;i1--;}
+        cout << "end " << Seconds1 -delay1 << " " << StatusCode1 << endl;
         Int_t i2 = 0; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(        i2); ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; t2min = ctime2;i2++;}
-        cout << "start " << Seconds2 << endl;
-        if(startTime > Seconds2) startTime = Seconds2;
+	while(StatusCode2) {t2->GetEntry(        i2); ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; t2min = ctime2;i2++;}
+        cout << "start " << Seconds2 - delay2 << endl;
+        if(startTime > Seconds2-delay2) startTime = Seconds2-delay2;
         i2 = nent2 - 1; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(i2); ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; t2max = ctime2;i2--;}
-        cout << "end " << Seconds2 << endl;
+	while(StatusCode2) {t2->GetEntry(i2); ctime2 = (Double_t ) Seconds2 -delay2 + (Double_t ) Nanoseconds2*1E-09; t2max = ctime2;i2--;}
+        cout << "end " << Seconds2 -delay2<< endl;
 
 	range1 = t1max - t1min;
 	range2 = t2max - t2min;
@@ -266,7 +289,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 // collect info on run duration and rate
        for(Int_t e1 = 0; e1 < nent1; e1++) {
                 t1->GetEntry(e1);
-                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
+                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-delay1-startTime),RunNumber1);
 
                 hAllPerRun1->Fill(RunNumber1);
                 if(StatusCode1==0){
@@ -278,7 +301,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
        for(Int_t e2 = 0; e2 < nent2; e2++) {
                 t2->GetEntry(e2);
-                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
+                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-delay2-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
                 if(StatusCode2==0){
@@ -330,7 +353,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Int_t cellIndex, size;
 	for (Int_t i = 0; i < nent2; i++) {
 		t2->GetEntry(i);
-		ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09;
+		ctime2 = (Double_t ) Seconds2 -delay2+ (Double_t ) Nanoseconds2*1E-09;
 		cellIndex = (Int_t)((ctime2 - tmin) / DiffCut);
 		if (cellIndex >= 0 && cellIndex < ncells) {
 			size = cell[cellIndex].GetSize();
@@ -454,7 +477,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		t1->GetEntry(e1);
 		// Calculate Theta1, Phi1
 		CalculateThetaPhi(XDir1, YDir1, ZDir1, Theta1, Phi1);
-		ctime1 = (Double_t ) Seconds1 + (Double_t ) Nanoseconds1*1E-09;
+		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
 		cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
 		for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
 			if (i < 0 || i >= ncells) continue;
@@ -462,10 +485,10 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				size = cell[cellIndex].GetSize();
 				e2 = cell[i].At(j);
 				t2->GetEntry(e2); 
-				ctime2 = (Double_t ) Seconds2 + (Double_t ) Nanoseconds2*1E-09; 
+				ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; 
 				//DiffTime= ctime1 - ctime2;    
-				if((Seconds1-Seconds2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
-				else DiffTime=((Double_t ) Seconds1 - (Double_t ) Seconds2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2); 
+				if((Seconds1-delay1-Seconds2+delay2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
+				else DiffTime=((Double_t ) Seconds1 -delay1 - (Double_t ) Seconds2 + delay2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2); 
 				// Calculate Theta2, Phi2
 				CalculateThetaPhi(XDir2, YDir2, ZDir2, Theta2, Phi2);
 				ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
