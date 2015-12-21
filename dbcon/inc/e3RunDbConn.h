@@ -21,7 +21,7 @@ using namespace std;
 //! e3RunDbConn class.
 /*!
 
-  EEEE rundb connector, a C++ wrapper for the MySQL C API library.
+  EEE rundb connector, a C++ wrapper for the MySQL C API library.
 
 */
 class e3RunDbConn{
