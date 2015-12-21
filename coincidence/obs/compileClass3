@@ -1,0 +1,2 @@
+#!/bin/bash
+g++ correlation_EEEcnaf3.C  -L/usr/lib64/root -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lMathCore -lThread -pthread -lm -ldl -rdynamic -I/usr/include/root -o analisiCoincAtCnaf3.exe
