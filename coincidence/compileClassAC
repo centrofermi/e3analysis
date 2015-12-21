@@ -1,4 +1,4 @@
 #!/bin/bash
 export ROOTDIR=$(root-config --libdir)
 export INCDIR=$(root-config --incdir)
-g++ autocorrelation_EEEcnaf.C  -L$ROOTDIR -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lMathCore -lThread -pthread -lm -ldl -rdynamic -I$INCDIR -o analisiACAtCnaf.exe
+g++ autocorrelation_EEEcnaf.C  -L$ROOTDIR -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lMathCore -lThread -pthread -lm -ldl -rdynamic -I$INCDIR -o bin/analisiACAtCnaf.exe
