@@ -34,7 +34,7 @@
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1);
+void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1,Double_t corrWindow=1E-4);
 
 int main(int argc,char *argv[]){
 
@@ -45,11 +45,16 @@ int main(int argc,char *argv[]){
 
   Double_t delay1=0;
   Double_t delay2=0;
+  Double_t cell=0.1;
+  Double_t window=1E-4;
 
   printf("list of options to overwrite the config file infos:\n");
   printf("-d DATE = to pass the date from line command\n");
   printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
   printf("-p PATH = to pass the path of the reco dirs\n");
+  printf("\nOptional features:\n");
+  printf("-cell cell_time_window = cell time window in seconds (default = 0.1)\n");
+  printf("-window corr_time_window = correlation time window to define output in seconds (default = 1E-4)\n");
   printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
   printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
 
@@ -89,7 +94,7 @@ int main(int argc,char *argv[]){
       kNoConfigFile++;
     }
 
-   if(CfrString(argv[i],"-deltay1")){
+   if(CfrString(argv[i],"-delay1")){
       if(i+1 > argc){
         printf("time delay (tel1) missing\n");
         return 1;
@@ -99,7 +104,7 @@ int main(int argc,char *argv[]){
       i++;  
     }
 
-   if(CfrString(argv[i],"-deltay2")){
+   if(CfrString(argv[i],"-delay2")){
       if(i+1 > argc){
         printf("time delay (tel2) missing\n");
         return 1;
@@ -110,15 +115,33 @@ int main(int argc,char *argv[]){
       i++;  
     }
 
+   if(CfrString(argv[i],"-cell")){
+      if(i+1 > argc){
+        printf("cell time window missing\n");
+        return 1;
+      }
+      sscanf(argv[i+1],"%lf",&cell);
+      i++;  
+    }
+
+   if(CfrString(argv[i],"-window")){
+      if(i+1 > argc){
+        printf("correlation time window missing\n");
+        return 1;
+      }
+      sscanf(argv[i+1],"%lf",&window);
+      i++;  
+    }
+
   }
 
-  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2);
+  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2,cell,window);
 
   return 0;
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t delay1,Double_t delay2,Double_t DiffCut)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t delay1,Double_t delay2,Double_t DiffCut,Double_t corrWindow)
 {
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
@@ -126,6 +149,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //
 // Data are read from the two ROOT trees created for each telescope
 //
+
+  corrWindow*=1E+9;
 
    TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
    TH1I *hexposure2 = new TH1I("hexposure2","Active run number in a given second;second - time_first_event;run number telescope 2",100000,0,100000);
@@ -499,7 +524,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                                 if(StatusCode1) ChiSquare1 = 1000;
                                 if(StatusCode2) ChiSquare2 = 1000;
 
-				if(TMath::Abs(DiffTime) <= 1E-4*1E9  && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
+				if(TMath::Abs(DiffTime) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
 			}
 		}
 	}
