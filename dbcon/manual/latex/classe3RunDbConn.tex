@@ -1,0 +1,131 @@
+\hypertarget{classe3RunDbConn}{
+\section{e3RunDbConn Class Reference}
+\label{classe3RunDbConn}\index{e3RunDbConn@{e3RunDbConn}}
+}
+
+
+\hyperlink{classe3RunDbConn}{e3RunDbConn} class.  
+
+
+{\ttfamily \#include $<$e3RunDbConn.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classe3RunDbConn_a3b9a10475acdd79085b58a919dc66835}{e3RunDbConn} ()
+\begin{DoxyCompactList}\small\item\em Default constructor. \item\end{DoxyCompactList}\item 
+\hyperlink{classe3RunDbConn_a58fbb7176357f93c0e576bc4feffcc26}{e3RunDbConn} (const string, const string, const string, const string)
+\begin{DoxyCompactList}\small\item\em Constructor. \item\end{DoxyCompactList}\item 
+\hyperlink{classe3RunDbConn_a9ba77cdf2ee9a6097344b8280c2473a1}{$\sim$e3RunDbConn} ()
+\begin{DoxyCompactList}\small\item\em Default destructor. \item\end{DoxyCompactList}\item 
+void \hyperlink{classe3RunDbConn_a1b4a0a5ec2ccd5deb5e042fa698ae872}{Init} ()
+\begin{DoxyCompactList}\small\item\em Init mysql structure and open a db connection according to the db parameters. \item\end{DoxyCompactList}\item 
+void \hyperlink{classe3RunDbConn_a1318d5a0927f864cb91d15a86592b595}{CloseConn} ()
+\begin{DoxyCompactList}\small\item\em Close db connection. \item\end{DoxyCompactList}\item 
+int \hyperlink{classe3RunDbConn_a09fea2023c17c05ef1b3bcff2773ec3e}{GetTelescopeList} (vector$<$ string $>$ \&, const string)
+\begin{DoxyCompactList}\small\item\em Get telescope list. \item\end{DoxyCompactList}\item 
+int \hyperlink{classe3RunDbConn_a42b34d56f7c154eb2132468996e476fd}{GetRunList} (vector$<$ string $>$ \&, const string, const string, const string, const string, unsigned int)
+\begin{DoxyCompactList}\small\item\em Get run list. \item\end{DoxyCompactList}\item 
+int \hyperlink{classe3RunDbConn_a2143f8e6b78e0a1a320be37b963a4ba6}{GetDaqConf} (vector$<$ string $>$ \&, const string, const string, const string)
+\begin{DoxyCompactList}\small\item\em Get daq configuration. \item\end{DoxyCompactList}\item 
+int \hyperlink{classe3RunDbConn_a7713cac73355f298e954c568217b59ba}{GetDaqConfList} (vector$<$ string $>$ \&, const string, const string, const string, const string)
+\begin{DoxyCompactList}\small\item\em Get daq configurations list. \item\end{DoxyCompactList}\item 
+void \hyperlink{classe3RunDbConn_a671dda122e528e9d6022299fcbe0f9dd}{SetOvertime} (unsigned int overtime)
+\item 
+void \hyperlink{classe3RunDbConn_a1c96ff8447ad019cbd22957d55a70845}{SetVerbosity} (unsigned int vLevel)
+\begin{DoxyCompactList}\small\item\em Set overtime for timewindow search (in hours). \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{classe3RunDbConn}{e3RunDbConn} class. EEEE rundb connector, a C++ wrapper for the MySQL C API library. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classe3RunDbConn_a3b9a10475acdd79085b58a919dc66835}{
+\index{e3RunDbConn@{e3RunDbConn}!e3RunDbConn@{e3RunDbConn}}
+\index{e3RunDbConn@{e3RunDbConn}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{e3RunDbConn}]{\setlength{\rightskip}{0pt plus 5cm}e3RunDbConn::e3RunDbConn ()\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{classe3RunDbConn_a3b9a10475acdd79085b58a919dc66835}
+
+
+Default constructor. Description. \hypertarget{classe3RunDbConn_a58fbb7176357f93c0e576bc4feffcc26}{
+\index{e3RunDbConn@{e3RunDbConn}!e3RunDbConn@{e3RunDbConn}}
+\index{e3RunDbConn@{e3RunDbConn}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{e3RunDbConn}]{\setlength{\rightskip}{0pt plus 5cm}e3RunDbConn::e3RunDbConn (const string {\em hostName}, \/  const string {\em dbUser}, \/  const string {\em dbPwd}, \/  const string {\em dbName})}}
+\label{classe3RunDbConn_a58fbb7176357f93c0e576bc4feffcc26}
+
+
+Constructor. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em hostName}]\item[\mbox{$\leftarrow$} {\em dbUser}]\item[\mbox{$\leftarrow$} {\em dbPwd}]\item[\mbox{$\leftarrow$} {\em dbName}]\end{DoxyParams}
+\hypertarget{classe3RunDbConn_a9ba77cdf2ee9a6097344b8280c2473a1}{
+\index{e3RunDbConn@{e3RunDbConn}!$\sim$e3RunDbConn@{$\sim$e3RunDbConn}}
+\index{$\sim$e3RunDbConn@{$\sim$e3RunDbConn}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{$\sim$e3RunDbConn}]{\setlength{\rightskip}{0pt plus 5cm}e3RunDbConn::$\sim$e3RunDbConn ()\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{classe3RunDbConn_a9ba77cdf2ee9a6097344b8280c2473a1}
+
+
+Default destructor. A more elaborate description of the destructor. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classe3RunDbConn_a1318d5a0927f864cb91d15a86592b595}{
+\index{e3RunDbConn@{e3RunDbConn}!CloseConn@{CloseConn}}
+\index{CloseConn@{CloseConn}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{CloseConn}]{\setlength{\rightskip}{0pt plus 5cm}void e3RunDbConn::CloseConn ()}}
+\label{classe3RunDbConn_a1318d5a0927f864cb91d15a86592b595}
+
+
+Close db connection. Correctly close the mysql connection and free MYSQL structure. \hypertarget{classe3RunDbConn_a2143f8e6b78e0a1a320be37b963a4ba6}{
+\index{e3RunDbConn@{e3RunDbConn}!GetDaqConf@{GetDaqConf}}
+\index{GetDaqConf@{GetDaqConf}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{GetDaqConf}]{\setlength{\rightskip}{0pt plus 5cm}int e3RunDbConn::GetDaqConf (vector$<$ string $>$ \& {\em parValueList}, \/  const string {\em stationID}, \/  const string {\em dateTimeStr}, \/  const string {\em colNameList})}}
+\label{classe3RunDbConn_a2143f8e6b78e0a1a320be37b963a4ba6}
+
+
+Get daq configuration. Get the daq parameter of a specific telescope for a specific date-\/time. \hypertarget{classe3RunDbConn_a7713cac73355f298e954c568217b59ba}{
+\index{e3RunDbConn@{e3RunDbConn}!GetDaqConfList@{GetDaqConfList}}
+\index{GetDaqConfList@{GetDaqConfList}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{GetDaqConfList}]{\setlength{\rightskip}{0pt plus 5cm}int e3RunDbConn::GetDaqConfList (vector$<$ string $>$ \& {\em parValueList}, \/  const string {\em stationID}, \/  const string {\em tWinLowStr}, \/  const string {\em tWinUpStr}, \/  const string {\em colNameList})}}
+\label{classe3RunDbConn_a7713cac73355f298e954c568217b59ba}
+
+
+Get daq configurations list. Get the list of daq configurations of a specific telescope in a specified time window.
+
+Current daq\_\-configurations table in runDB:
+
++-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+ $|$ Field $|$ Type $|$ Null $|$ Key $|$ Default $|$ Extra $|$ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+ $|$ id $|$ int(11) unsigned $|$ NO $|$ PRI $|$ NULL $|$ auto\_\-increment $|$ $|$ gps\_\-latitude $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ gps\_\-longitude $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ gps\_\-altitude $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ mrpc12\_\-distance $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ mrpc23\_\-distance $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ magnorth\_\-angle $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ geonorth\_\-angle $|$ float $|$ YES $|$ $|$ NULL $|$ $|$ $|$ valid\_\-from $|$ datetime $|$ YES $|$ $|$ NULL $|$ $|$ $|$ valid\_\-until $|$ datetime $|$ YES $|$ $|$ NULL $|$ $|$ $|$ telescope\_\-id $|$ tinyint(3) unsigned $|$ NO $|$ $|$ NULL $|$ $|$ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+ \hypertarget{classe3RunDbConn_a42b34d56f7c154eb2132468996e476fd}{
+\index{e3RunDbConn@{e3RunDbConn}!GetRunList@{GetRunList}}
+\index{GetRunList@{GetRunList}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{GetRunList}]{\setlength{\rightskip}{0pt plus 5cm}int e3RunDbConn::GetRunList (vector$<$ string $>$ \& {\em fileNameList}, \/  const string {\em stationID}, \/  const string {\em tWinLowStr}, \/  const string {\em tWinUpStr}, \/  const string {\em whereClausesStr}, \/  unsigned int {\em outFormat})}}
+\label{classe3RunDbConn_a42b34d56f7c154eb2132468996e476fd}
+
+
+Get run list. Get run list in a spiecified time window. \hypertarget{classe3RunDbConn_a09fea2023c17c05ef1b3bcff2773ec3e}{
+\index{e3RunDbConn@{e3RunDbConn}!GetTelescopeList@{GetTelescopeList}}
+\index{GetTelescopeList@{GetTelescopeList}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{GetTelescopeList}]{\setlength{\rightskip}{0pt plus 5cm}int e3RunDbConn::GetTelescopeList (vector$<$ string $>$ \& {\em telIDList}, \/  const string {\em whereClausesStr})}}
+\label{classe3RunDbConn_a09fea2023c17c05ef1b3bcff2773ec3e}
+
+
+Get telescope list. Get telescope list in a spiecified time window. \hypertarget{classe3RunDbConn_a1b4a0a5ec2ccd5deb5e042fa698ae872}{
+\index{e3RunDbConn@{e3RunDbConn}!Init@{Init}}
+\index{Init@{Init}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{Init}]{\setlength{\rightskip}{0pt plus 5cm}void e3RunDbConn::Init ()}}
+\label{classe3RunDbConn_a1b4a0a5ec2ccd5deb5e042fa698ae872}
+
+
+Init mysql structure and open a db connection according to the db parameters. Correctly initialize the mysql connection. \hypertarget{classe3RunDbConn_a671dda122e528e9d6022299fcbe0f9dd}{
+\index{e3RunDbConn@{e3RunDbConn}!SetOvertime@{SetOvertime}}
+\index{SetOvertime@{SetOvertime}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{SetOvertime}]{\setlength{\rightskip}{0pt plus 5cm}void e3RunDbConn::SetOvertime (unsigned int {\em overtime})\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{classe3RunDbConn_a671dda122e528e9d6022299fcbe0f9dd}
+\hypertarget{classe3RunDbConn_a1c96ff8447ad019cbd22957d55a70845}{
+\index{e3RunDbConn@{e3RunDbConn}!SetVerbosity@{SetVerbosity}}
+\index{SetVerbosity@{SetVerbosity}!e3RunDbConn@{e3RunDbConn}}
+\subsubsection[{SetVerbosity}]{\setlength{\rightskip}{0pt plus 5cm}void e3RunDbConn::SetVerbosity (unsigned int {\em vLevel})\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{classe3RunDbConn_a1c96ff8447ad019cbd22957d55a70845}
+
+
+Set overtime for timewindow search (in hours). 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{e3RunDbConn_8h}{e3RunDbConn.h}\item 
+\hyperlink{e3RunDbConn_8cpp}{e3RunDbConn.cpp}\end{DoxyCompactItemize}

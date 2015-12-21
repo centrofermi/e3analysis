@@ -1,0 +1,109 @@
+\hypertarget{main_8cpp}{
+\section{main.cpp File Reference}
+\label{main_8cpp}\index{main.cpp@{main.cpp}}
+}
+{\ttfamily \#include $<$string$>$}\par
+{\ttfamily \#include $<$cmath$>$}\par
+{\ttfamily \#include $<$iostream$>$}\par
+{\ttfamily \#include $<$vector$>$}\par
+{\ttfamily \#include $<$algorithm$>$}\par
+{\ttfamily \#include $<$fstream$>$}\par
+{\ttfamily \#include $<$cstdlib$>$}\par
+{\ttfamily \#include $<$sstream$>$}\par
+{\ttfamily \#include $<$iterator$>$}\par
+{\ttfamily \#include \char`\"{}anyoption.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}e3RunDbConn.h\char`\"{}}\par
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4}{STATUS} \{ \hyperlink{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4aff01b0a17c2ff93252e0dd716b82ab56}{OK\_\-STAT} = 0x01, 
+\hyperlink{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4a54fa0db45f70d108d14ba3ccd62fb28b}{BAD\_\-STAT} = 0x00
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{main_8cpp_afa918c70ca89865cedd5183ed9ecdcbe}{GetUserOpt} (int, char $\ast$$\ast$)
+\item 
+int \hyperlink{main_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\item 
+int \hyperlink{main_8cpp_aeb43f70118620419eac590a507975d6b}{GetUserOpt} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em \hyperlink{classAnyOption}{AnyOption} Interface function. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{main_8cpp_af13e2bd362b115535b741e5b4ca60415}{VLEVEL} = 0
+\item 
+string \hyperlink{main_8cpp_a1d530697a906c5827524ffe362d7ba0f}{STATIONID}
+\item 
+string \hyperlink{main_8cpp_a546380c3f3351ebc68f3d8d0ca6030fe}{DATETIMEWIN}
+\item 
+string \hyperlink{main_8cpp_a109a5aed486b062ac1d6e980f672ed65}{DAQCONFLIST}
+\end{DoxyCompactItemize}
+
+
+\subsection{Enumeration Type Documentation}
+\hypertarget{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4}{
+\index{main.cpp@{main.cpp}!STATUS@{STATUS}}
+\index{STATUS@{STATUS}!main.cpp@{main.cpp}}
+\subsubsection[{STATUS}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf STATUS}}}
+\label{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4}
+\begin{Desc}
+\item[Enumerator: ]\par
+\begin{description}
+\index{OK\_\-STAT@{OK\_\-STAT}!main.cpp@{main.cpp}}\index{main.cpp@{main.cpp}!OK\_\-STAT@{OK\_\-STAT}}\item[{\em 
+\hypertarget{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4aff01b0a17c2ff93252e0dd716b82ab56}{
+OK\_\-STAT}
+\label{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4aff01b0a17c2ff93252e0dd716b82ab56}
+}]\index{BAD\_\-STAT@{BAD\_\-STAT}!main.cpp@{main.cpp}}\index{main.cpp@{main.cpp}!BAD\_\-STAT@{BAD\_\-STAT}}\item[{\em 
+\hypertarget{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4a54fa0db45f70d108d14ba3ccd62fb28b}{
+BAD\_\-STAT}
+\label{main_8cpp_a32c27cc471df37f4fc818d65de0a56c4a54fa0db45f70d108d14ba3ccd62fb28b}
+}]\end{description}
+\end{Desc}
+
+
+
+\subsection{Function Documentation}
+\hypertarget{main_8cpp_aeb43f70118620419eac590a507975d6b}{
+\index{main.cpp@{main.cpp}!GetUserOpt@{GetUserOpt}}
+\index{GetUserOpt@{GetUserOpt}!main.cpp@{main.cpp}}
+\subsubsection[{GetUserOpt}]{\setlength{\rightskip}{0pt plus 5cm}int GetUserOpt (int {\em argc}, \/  char $\ast$ {\em argv}\mbox{[}$\,$\mbox{]})}}
+\label{main_8cpp_aeb43f70118620419eac590a507975d6b}
+
+
+\hyperlink{classAnyOption}{AnyOption} Interface function. Command line option parsing function. \hypertarget{main_8cpp_afa918c70ca89865cedd5183ed9ecdcbe}{
+\index{main.cpp@{main.cpp}!GetUserOpt@{GetUserOpt}}
+\index{GetUserOpt@{GetUserOpt}!main.cpp@{main.cpp}}
+\subsubsection[{GetUserOpt}]{\setlength{\rightskip}{0pt plus 5cm}int GetUserOpt (int, \/  char $\ast$$\ast$)}}
+\label{main_8cpp_afa918c70ca89865cedd5183ed9ecdcbe}
+\hypertarget{main_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{
+\index{main.cpp@{main.cpp}!main@{main}}
+\index{main@{main}!main.cpp@{main.cpp}}
+\subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em argc}, \/  char $\ast$ {\em argv}\mbox{[}$\,$\mbox{]})}}
+\label{main_8cpp_a0ddf1224851353fc92bfbff6f499fa97}
+Main routine. 
+
+$<$ Process status 
+
+\subsection{Variable Documentation}
+\hypertarget{main_8cpp_a109a5aed486b062ac1d6e980f672ed65}{
+\index{main.cpp@{main.cpp}!DAQCONFLIST@{DAQCONFLIST}}
+\index{DAQCONFLIST@{DAQCONFLIST}!main.cpp@{main.cpp}}
+\subsubsection[{DAQCONFLIST}]{\setlength{\rightskip}{0pt plus 5cm}string {\bf DAQCONFLIST}}}
+\label{main_8cpp_a109a5aed486b062ac1d6e980f672ed65}
+\hypertarget{main_8cpp_a546380c3f3351ebc68f3d8d0ca6030fe}{
+\index{main.cpp@{main.cpp}!DATETIMEWIN@{DATETIMEWIN}}
+\index{DATETIMEWIN@{DATETIMEWIN}!main.cpp@{main.cpp}}
+\subsubsection[{DATETIMEWIN}]{\setlength{\rightskip}{0pt plus 5cm}string {\bf DATETIMEWIN}}}
+\label{main_8cpp_a546380c3f3351ebc68f3d8d0ca6030fe}
+\hypertarget{main_8cpp_a1d530697a906c5827524ffe362d7ba0f}{
+\index{main.cpp@{main.cpp}!STATIONID@{STATIONID}}
+\index{STATIONID@{STATIONID}!main.cpp@{main.cpp}}
+\subsubsection[{STATIONID}]{\setlength{\rightskip}{0pt plus 5cm}string {\bf STATIONID}}}
+\label{main_8cpp_a1d530697a906c5827524ffe362d7ba0f}
+\hypertarget{main_8cpp_af13e2bd362b115535b741e5b4ca60415}{
+\index{main.cpp@{main.cpp}!VLEVEL@{VLEVEL}}
+\index{VLEVEL@{VLEVEL}!main.cpp@{main.cpp}}
+\subsubsection[{VLEVEL}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf VLEVEL} = 0}}
+\label{main_8cpp_af13e2bd362b115535b741e5b4ca60415}
