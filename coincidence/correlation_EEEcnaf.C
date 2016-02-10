@@ -238,26 +238,28 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	UInt_t StatusCode1, StatusCode2;
 	UInt_t Seconds1, Seconds2;
 	ULong64_t Nanoseconds1, Nanoseconds2;
-	Float_t XDir1, YDir1, ZDir1;
-	Float_t XDir2, YDir2, ZDir2;
-	Float_t ChiSquare1, ChiSquare2;
-	Float_t TimeOfFlight1, TimeOfFlight2;
-	Float_t TrackLength1, TrackLength2;
-	Double_t DeltaTime1, DeltaTime2;
 //	ULong64_t UniqueRunId1, UniqueRunId2;
+
+	// track by track info
+	Float_t XDir1[24], YDir1[24], ZDir1[24];
+	Float_t XDir2[24], YDir2[24], ZDir2[24];
+	Float_t ChiSquare1[24], ChiSquare2[24];
+	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
+	Float_t TrackLength1[24], TrackLength2[24];
+	Double_t DeltaTime1[24], DeltaTime2[24];
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
 	t1->SetBranchAddress("EventNumber",&EventNumber1);
 	t1->SetBranchAddress("StatusCode",&StatusCode1);
 	t1->SetBranchAddress("Seconds",&Seconds1);
 	t1->SetBranchAddress("Nanoseconds",&Nanoseconds1);
-	t1->SetBranchAddress("XDir",&XDir1);
-	t1->SetBranchAddress("YDir",&YDir1);
-	t1->SetBranchAddress("ZDir",&ZDir1);
-	t1->SetBranchAddress("ChiSquare", &ChiSquare1);
-	t1->SetBranchAddress("TimeOfFlight", &TimeOfFlight1);
-	t1->SetBranchAddress("TrackLength", &TrackLength1);
-	t1->SetBranchAddress("DeltaTime", &DeltaTime1);
+	t1->SetBranchAddress("XDir",XDir1);
+	t1->SetBranchAddress("YDir",YDir1);
+	t1->SetBranchAddress("ZDir",ZDir1);
+	t1->SetBranchAddress("ChiSquare", ChiSquare1);
+	t1->SetBranchAddress("TimeOfFlight", TimeOfFlight1);
+	t1->SetBranchAddress("TrackLength", TrackLength1);
+	t1->SetBranchAddress("DeltaTime", DeltaTime1);
 //	t1->SetBranchAddress("UniqueRunId", &UniqueRunId1);
 
 	t2->SetBranchAddress("RunNumber",&RunNumber2);
@@ -265,13 +267,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t2->SetBranchAddress("StatusCode",&StatusCode2);
 	t2->SetBranchAddress("Seconds",&Seconds2);
 	t2->SetBranchAddress("Nanoseconds",&Nanoseconds2);
-	t2->SetBranchAddress("XDir",&XDir2);
-	t2->SetBranchAddress("YDir",&YDir2);
-	t2->SetBranchAddress("ZDir",&ZDir2);
-	t2->SetBranchAddress("ChiSquare", &ChiSquare2);
-	t2->SetBranchAddress("TimeOfFlight", &TimeOfFlight2);
-	t2->SetBranchAddress("TrackLength", &TrackLength2);
-	t2->SetBranchAddress("DeltaTime", &DeltaTime2);
+	t2->SetBranchAddress("XDir",XDir2);
+	t2->SetBranchAddress("YDir",YDir2);
+	t2->SetBranchAddress("ZDir",ZDir2);
+	t2->SetBranchAddress("ChiSquare", ChiSquare2);
+	t2->SetBranchAddress("TimeOfFlight", TimeOfFlight2);
+	t2->SetBranchAddress("TrackLength", TrackLength2);
+	t2->SetBranchAddress("DeltaTime", DeltaTime2);
 //	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
 
 	Int_t nent1 = t1->GetEntries();
@@ -322,7 +324,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                 hAllPerRun1->Fill(RunNumber1);
                 if(StatusCode1==0){
                     hEventPerRun1->Fill(RunNumber1); 
-                    if(ChiSquare1 < 10) hGoodTrackPerRun1->Fill(RunNumber1);
+                    if(ChiSquare1[0] < 10) hGoodTrackPerRun1->Fill(RunNumber1);
                 }
        }
        hGoodTrackPerRun1->Divide(hEventPerRun1);
@@ -334,7 +336,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                 hAllPerRun2->Fill(RunNumber2);
                 if(StatusCode2==0){
                     hEventPerRun2->Fill(RunNumber2);    
-                    if(ChiSquare2 < 10) hGoodTrackPerRun2->Fill(RunNumber2);
+                    if(ChiSquare2[0] < 10) hGoodTrackPerRun2->Fill(RunNumber2);
                 }
        }
        hGoodTrackPerRun2->Divide(hEventPerRun2);
@@ -481,17 +483,17 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeout->Branch("month", &month, "month/I");
         treeout->Branch("day", &day, "day/I");
 	treeout->Branch("ctime1", &ctime1, "ctime1/D");
-	treeout->Branch("ChiSquare1", &ChiSquare1, "ChiSquare1/F");
-	treeout->Branch("TimeOfFlight1", &TimeOfFlight1, "TimeOfFlight1/F");
-	treeout->Branch("TrackLength1", &TrackLength1, "TrackLength1/F");
+	treeout->Branch("ChiSquare1", ChiSquare1, "ChiSquare1/F");
+	treeout->Branch("TimeOfFlight1", TimeOfFlight1, "TimeOfFlight1/F");
+	treeout->Branch("TrackLength1", TrackLength1, "TrackLength1/F");
 	treeout->Branch("Theta1", &Theta1, "Theta1/F");
 	treeout->Branch("Phi1", &Phi1, "Phi1/F");
         treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
         treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
 	treeout->Branch("ctime2", &ctime2, "ctime2/D");
-	treeout->Branch("ChiSquare2", &ChiSquare2, "ChiSquare2/F");
-	treeout->Branch("TimeOfFlight2", &TimeOfFlight2, "TimeOfFlight2/F");
-	treeout->Branch("TrackLength2", &TrackLength2, "TrackLength2/F");
+	treeout->Branch("ChiSquare2", ChiSquare2, "ChiSquare2/F");
+	treeout->Branch("TimeOfFlight2", TimeOfFlight2, "TimeOfFlight2/F");
+	treeout->Branch("TrackLength2", TrackLength2, "TrackLength2/F");
 	treeout->Branch("Theta2", &Theta2, "Theta2/F");
 	treeout->Branch("Phi2", &Phi2, "Phi2/F");
         treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
@@ -504,7 +506,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
 		// Calculate Theta1, Phi1
-		CalculateThetaPhi(XDir1, YDir1, ZDir1, Theta1, Phi1);
+		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
 		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
 		cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
 		for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
@@ -518,7 +520,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				if((Seconds1-delay1-Seconds2+delay2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
 				else DiffTime=((Double_t ) Seconds1 -delay1 - (Double_t ) Seconds2 + delay2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2); 
 				// Calculate Theta2, Phi2
-				CalculateThetaPhi(XDir2, YDir2, ZDir2, Theta2, Phi2);
+				CalculateThetaPhi(XDir2[0], YDir2[0], ZDir2[0], Theta2, Phi2);
 				ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
 
                                 if(StatusCode1) ChiSquare1 = 1000;
