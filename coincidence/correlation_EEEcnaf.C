@@ -1,6 +1,6 @@
 /***************************************************
 ***                                              ***
-***							correlation_EEE.C							   ***
+***    correlation_EEE.C    		         ***
 ***                                              ***
 ***   This program looks for the coincicidences  ***
 ***   between 2 EEE telescopes. It uses a        ***
@@ -240,18 +240,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	UInt_t StatusCode1, StatusCode2;
 	UInt_t Seconds1, Seconds2;
 	ULong64_t Nanoseconds1, Nanoseconds2;
-<<<<<<< HEAD
-	Float_t XDir1, YDir1, ZDir1;
-	Float_t XDir2, YDir2, ZDir2;
-	Float_t ChiSquare1, ChiSquare2;
-	Float_t TimeOfFlight1, TimeOfFlight2;
-	Float_t TrackLength1, TrackLength2;
-	Double_t DeltaTime1, DeltaTime2;
 //	ULong64_t UniqueRunId1, UniqueRunId2;
-
         Int_t ntracks1,ntracks2;
-=======
-//	ULong64_t UniqueRunId1, UniqueRunId2;
 
 	// track by track info
 	Float_t XDir1[24], YDir1[24], ZDir1[24];
@@ -260,24 +250,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
 	Float_t TrackLength1[24], TrackLength2[24];
 	Double_t DeltaTime1[24], DeltaTime2[24];
->>>>>>> 23638a417ee6f69f8192efea365a25a7ce814c1e
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
 	t1->SetBranchAddress("EventNumber",&EventNumber1);
 	t1->SetBranchAddress("StatusCode",&StatusCode1);
 	t1->SetBranchAddress("Seconds",&Seconds1);
 	t1->SetBranchAddress("Nanoseconds",&Nanoseconds1);
-<<<<<<< HEAD
-	t1->SetBranchAddress("XDir",&XDir1);
-	t1->SetBranchAddress("YDir",&YDir1);
-	t1->SetBranchAddress("ZDir",&ZDir1);
-	t1->SetBranchAddress("ChiSquare", &ChiSquare1);
-	t1->SetBranchAddress("TimeOfFlight", &TimeOfFlight1);
-	t1->SetBranchAddress("TrackLength", &TrackLength1);
-	t1->SetBranchAddress("DeltaTime", &DeltaTime1);
-//	t1->SetBranchAddress("UniqueRunId", &UniqueRunId1);
         if(t1->GetLeaf("Ntracks")) t1->SetBranchAddress("Ntracks", &ntracks1);
-=======
 	t1->SetBranchAddress("XDir",XDir1);
 	t1->SetBranchAddress("YDir",YDir1);
 	t1->SetBranchAddress("ZDir",ZDir1);
@@ -286,24 +265,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t1->SetBranchAddress("TrackLength", TrackLength1);
 	t1->SetBranchAddress("DeltaTime", DeltaTime1);
 //	t1->SetBranchAddress("UniqueRunId", &UniqueRunId1);
->>>>>>> 23638a417ee6f69f8192efea365a25a7ce814c1e
-
 	t2->SetBranchAddress("RunNumber",&RunNumber2);
 	t2->SetBranchAddress("EventNumber",&EventNumber2);
 	t2->SetBranchAddress("StatusCode",&StatusCode2);
 	t2->SetBranchAddress("Seconds",&Seconds2);
 	t2->SetBranchAddress("Nanoseconds",&Nanoseconds2);
-<<<<<<< HEAD
-	t2->SetBranchAddress("XDir",&XDir2);
-	t2->SetBranchAddress("YDir",&YDir2);
-	t2->SetBranchAddress("ZDir",&ZDir2);
-	t2->SetBranchAddress("ChiSquare", &ChiSquare2);
-	t2->SetBranchAddress("TimeOfFlight", &TimeOfFlight2);
-	t2->SetBranchAddress("TrackLength", &TrackLength2);
-	t2->SetBranchAddress("DeltaTime", &DeltaTime2);
 //	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
         if(t2->GetLeaf("Ntracks")) t2->SetBranchAddress("Ntracks", &ntracks2);
-=======
 	t2->SetBranchAddress("XDir",XDir2);
 	t2->SetBranchAddress("YDir",YDir2);
 	t2->SetBranchAddress("ZDir",ZDir2);
@@ -312,7 +280,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t2->SetBranchAddress("TrackLength", TrackLength2);
 	t2->SetBranchAddress("DeltaTime", DeltaTime2);
 //	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
->>>>>>> 23638a417ee6f69f8192efea365a25a7ce814c1e
 
 	Int_t nent1 = t1->GetEntries();
 	Int_t nent2 = t2->GetEntries();
@@ -423,7 +390,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		t2->GetEntry(i);
 		ctime2 = (Double_t ) Seconds2 -delay2+ (Double_t ) Nanoseconds2*1E-09;
 		cellIndex = (Int_t)((ctime2 - tmin) / DiffCut);
-		if (cellIndex >= 0 && cellIndex < ncells) {
+		if (cellIndex >= 0 && cellIndex < ncells && StatusCode2==0) {
 			size = cell[cellIndex].GetSize();
 			cell[cellIndex].Set(size+1);
 			cell[cellIndex][size] = i;
@@ -546,6 +513,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	for(e1 = 0; e1 < nent1; e1++) {
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
+                if(StatusCode1) continue;
 		// Calculate Theta1, Phi1
 		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
 		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
@@ -564,8 +532,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				CalculateThetaPhi(XDir2[0], YDir2[0], ZDir2[0], Theta2, Phi2);
 				ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
 
-                                if(StatusCode1) ChiSquare1 = 1000;
-                                if(StatusCode2) ChiSquare2 = 1000;
+                                if(StatusCode1) ChiSquare1[0] = 1000;
+                                if(StatusCode2) ChiSquare2[0] = 1000;
 
 				if(TMath::Abs(DiffTime) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
 			}
