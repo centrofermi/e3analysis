@@ -249,7 +249,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t ChiSquare1[24], ChiSquare2[24];
 	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
 	Float_t TrackLength1[24], TrackLength2[24];
-	Double_t DeltaTime1[24], DeltaTime2[24];
+	Float_t DeltaTime1[24], DeltaTime2[24];
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
 	t1->SetBranchAddress("EventNumber",&EventNumber1);
