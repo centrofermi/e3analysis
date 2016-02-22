@@ -251,6 +251,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
 	Float_t nsat1,nsat2;
+	Int_t maskT1,maskM1,maskB1;
+	Int_t maskT2,maskM2,maskB2;
+
 
 	// track by track info
 	Float_t XDir1[24], YDir1[24], ZDir1[24];
@@ -263,6 +266,12 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
         if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
         if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
+        if(t1h->GetLeaf("DeadChMaskBot")) t1h->SetBranchAddress("DeadChMaskBot", &maskB1);
+        if(t2h->GetLeaf("DeadChMaskBot")) t2h->SetBranchAddress("DeadChMaskBot", &maskB2);
+        if(t1h->GetLeaf("DeadChMaskMid")) t1h->SetBranchAddress("DeadChMaskMid", &maskM1);
+        if(t2h->GetLeaf("DeadChMaskMid")) t2h->SetBranchAddress("DeadChMaskMid", &maskM2);
+        if(t1h->GetLeaf("DeadChMaskTop")) t1h->SetBranchAddress("DeadChMaskTop", &maskT1);
+        if(t2h->GetLeaf("DeadChMaskTop")) t2h->SetBranchAddress("DeadChMaskTop", &maskT2);
 
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
@@ -430,6 +439,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel1->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel1->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
         treeTel1->Branch("Nsat",&nsat1,"nSat/F");
+        treeTel1->Branch("maskB",&maskB1,"maskB/I");
+        treeTel1->Branch("maskM",&maskM1,"maskM/I");
+        treeTel1->Branch("maskT",&maskT1,"maskT/I");
 
         TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
         treeTel2->Branch("year", &year, "year/I");
@@ -441,6 +453,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel2->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel2->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
         treeTel2->Branch("Nsat",&nsat2,"nSat/F");
+        treeTel2->Branch("maskB",&maskB2,"maskB/I");
+        treeTel2->Branch("maskM",&maskM2,"maskM/I");
+        treeTel2->Branch("maskT",&maskT2,"maskT/I");
 
         TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
         treeTimeCommon->Branch("year", &year, "year/I");
