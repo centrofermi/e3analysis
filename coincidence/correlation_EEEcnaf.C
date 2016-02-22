@@ -222,14 +222,22 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         system(Form("ls %s/%s/%s/*.root >lista%s%s_2",path,tel_code2,date,tel_code2,date));
 
         TChain *t1 = new TChain("Events");
+        TChain *t1h = new TChain("Header");
         FILE *f1 = fopen(Form("lista%s%s_1",tel_code1,date),"r");
         char filename[300];
-        while(fscanf(f1,"%s",filename)==1) t1->Add(filename);
+        while(fscanf(f1,"%s",filename)==1){
+	  t1->Add(filename);
+	  t1h->Add(filename);
+	}
         fclose(f1);
 
         TChain *t2 = new TChain("Events");
+        TChain *t2h = new TChain("Header");
         FILE *f2 = fopen(Form("lista%s%s_2",tel_code2,date),"r");
-        while(fscanf(f2,"%s",filename)==1) t2->Add(filename);
+        while(fscanf(f2,"%s",filename)==1){
+	  t2->Add(filename);
+	  t2h->Add(filename);
+	}
         fclose(f2);
 
 //
@@ -242,6 +250,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	ULong64_t Nanoseconds1, Nanoseconds2;
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
+	Float_t nsat1,nsat2;
 
 	// track by track info
 	Float_t XDir1[24], YDir1[24], ZDir1[24];
@@ -250,6 +259,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
 	Float_t TrackLength1[24], TrackLength2[24];
 	Float_t DeltaTime1[24], DeltaTime2[24];
+
+
+        if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("Nsat", &nsat1);
+        if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("Nsat", &nsat2);
+
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
 	t1->SetBranchAddress("EventNumber",&EventNumber1);
@@ -415,6 +429,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel1->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
         treeTel1->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel1->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
+        treeTel1->Branch("Nsat",&nsat1,"nSat/F");
 
         TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
         treeTel2->Branch("year", &year, "year/I");
@@ -425,6 +440,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel2->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
         treeTel2->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel2->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
+        treeTel2->Branch("Nsat",&nsat2,"nSat/F");
 
         TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
         treeTimeCommon->Branch("year", &year, "year/I");
@@ -435,8 +451,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTimeCommon->Branch("timeduration",&timeduration,"timeduration/I");
 
         // Fill the infos
+	Int_t n1run=0,n2run=0;
         for(Int_t i=1;i<=500;i++){
             if(htimePerRun1->GetBinContent(i) > 0){
+	        t1h->GetEvent(n1run);
+		n1run++;
                 runnumber = i-1;
                 timeduration = htimePerRun1->GetBinContent(i);
                 ratePerRun = hEventPerRun1->GetBinContent(i);
@@ -445,6 +464,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                 treeTel1->Fill();
             }
             if(htimePerRun2->GetBinContent(i) > 0){
+	        t2h->GetEvent(n2run);
+		n2run++;
                 runnumber = i-1;
                 timeduration = htimePerRun2->GetBinContent(i);
                 ratePerRun = hEventPerRun2->GetBinContent(i);
