@@ -261,8 +261,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t DeltaTime1[24], DeltaTime2[24];
 
 
-        if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("Nsat", &nsat1);
-        if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("Nsat", &nsat2);
+        if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
+        if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
 
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
