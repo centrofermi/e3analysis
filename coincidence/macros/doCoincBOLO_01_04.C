@@ -296,7 +296,7 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputBOLO-01-03.root","RECREATE");
+  TFile *fo = new TFile("outputBOLO-01-04.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();
