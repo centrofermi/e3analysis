@@ -47,7 +47,7 @@ void doCoincCERN_01_02(const char *fileIn="coincCERN_0102.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
 
-  angle *= TMath::RadToDeg();
+  angle *= TMath::DegToRad();
 
   // define some histos
   TH1F *hDeltaTheta = new TH1F("hDeltaTheta","#Delta#theta below the peak (500 ns);#Delta#theta (#circ)",100,-60,60);
