@@ -60,6 +60,12 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   TH2F *hAngle = new TH2F("hAngle",";#Delta#theta (#circ);#Delta#phi (#circ}",20,-60,60,20,-360,360);
   TH2F *hAngleBack = new TH2F("hAngleBack",";#Delta#theta (#circ);#Delta#phi (#circ}",20,-60,60,20,-360,360);
 
+  TH1F *hTheta = new TH1F("hTheta","#theta below the peak (500 ns);#theta (#circ)",90,0,90);
+  TH1F *hThetaBack = new TH1F("hThetaBack","#theta below the peak (500 ns);#theta (#circ)",90,0,90);
+  TH1F *hPhi = new TH1F("hPhi","#phi below the peak (500 ns);#phi (#circ)",100,0,360);
+  TH1F *hPhiBack = new TH1F("hPhiBack","#phi below the peak (500 ns);#phi (#circ)",100,0,360);
+
+
 
   TFile *f = new TFile(fileIn);
   TTree *t = (TTree *) f->Get("tree");
@@ -214,6 +220,8 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
       hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRel->Fill(thetarel);
+      hTheta->Fill(thetaAv*TMath::RadToDeg());
+      hPhi->Fill(phiAv*TMath::RadToDeg());
       hAngle->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
     }
     else if(TMath::Abs(DeltaT-corr) > 1000 && TMath::Abs(DeltaT-corr) < 6000){
@@ -221,6 +229,8 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
       hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRelBack->Fill(thetarel);
       hAngleBack->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
+      hThetaBack->Fill(thetaAv*TMath::RadToDeg());
+      hPhiBack->Fill(phiAv*TMath::RadToDeg());
     }
   }
   
@@ -229,9 +239,13 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   hDeltaThetaBack->Sumw2();
   hDeltaPhiBack->Sumw2();
   hThetaRelBack->Sumw2();
+  hThetaBack->Sumw2();
+  hPhiBack->Sumw2();
   hDeltaThetaBack->Scale(0.1);
   hDeltaPhiBack->Scale(0.1);
   hThetaRelBack->Scale(0.1);
+  hThetaBack->Scale(0.1);
+  hPhiBack->Scale(0.1);
   hAngleBack->Scale(0.1);
   hAngle->Add(hAngleBack,-1);
 
@@ -292,9 +306,13 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   hDeltaTheta->Write();
   hDeltaPhi->Write();
   hThetaRel->Write();
+  hTheta->Write();
+  hPhi->Write();
   hDeltaThetaBack->Write();
   hDeltaPhiBack->Write();
   hThetaRelBack->Write();
+  hThetaBack->Write();
+  hPhiBack->Write();
   hAngle->Write();
   fo->Close();
   
