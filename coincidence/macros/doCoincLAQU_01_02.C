@@ -31,7 +31,7 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 360;
 
 // telescope settings
 Float_t angle = -164.0556;//deg
@@ -65,6 +65,16 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   TH1F *hPhi = new TH1F("hPhi","#phi below the peak (500 ns);#phi (#circ)",100,0,360);
   TH1F *hPhiBack = new TH1F("hPhiBack","#phi below the peak (500 ns);#phi (#circ)",100,0,360);
 
+  TH2F *hThetaPhi = new TH2F("hThetaPhi","#theta-#phi below the peak (500 ns);#theta (#circ);#phi (#circ)",100,0,90,100,0,360);
+  TH2F *hThetaPhiBack = new TH2F("hThetaPhiBack","#theta-#phi background;#theta (#circ);#phi (#circ)",100,0,90,100,0,360);
+
+  TFile *facc = new TFile("accLAQU.root");
+  TH2D *hacc;
+  if(facc){
+    hacc = (TH2D *) facc->Get("hthetaphi");
+  }
+
+  Float_t weight = 1;
 
 
   TFile *f = new TFile(fileIn);
@@ -210,27 +220,40 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
     else phiAv = (Phi1+Phi2)*0.5 + TMath::Pi();
     thetaAv = (Theta1+Theta2)*0.5;
     
+    if(phiAv >TMath::Pi()*2) phiAv -= TMath::Pi()*2;
+
     // extra cuts if needed
     //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
-    h->Fill(DeltaT-corr);
+    if(hacc){
+      // weight = hacc->Interpolate(thetaAv*TMath::RadToDeg(),phiAv*TMath::RadToDeg());
+      // if(weight < 0.0001) weight = 10000;
+      // else weight = 1./weight;
+      
+      // if(thetaAv > 10) weight = 0;
+    }
+      
+
+    h->Fill(DeltaT-corr,weight);
     if(TMath::Abs(DeltaT-corr) < 500){
-      hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
-      hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
-      hThetaRel->Fill(thetarel);
-      hTheta->Fill(thetaAv*TMath::RadToDeg());
-      hPhi->Fill(phiAv*TMath::RadToDeg());
-      hAngle->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
+      hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg(),weight);
+      hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg(),weight);
+      hThetaRel->Fill(thetarel,weight);
+      hTheta->Fill(thetaAv*TMath::RadToDeg(),weight);
+      hPhi->Fill(phiAv*TMath::RadToDeg(),weight);
+      hThetaPhi->Fill(thetaAv*TMath::RadToDeg(),phiAv*TMath::RadToDeg(),weight);
+      hAngle->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg(),weight);
     }
     else if(TMath::Abs(DeltaT-corr) > 1000 && TMath::Abs(DeltaT-corr) < 6000){
-      hDeltaThetaBack->Fill((Theta1-Theta2)*TMath::RadToDeg());
-      hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg());
-      hThetaRelBack->Fill(thetarel);
-      hAngleBack->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
-      hThetaBack->Fill(thetaAv*TMath::RadToDeg());
-      hPhiBack->Fill(phiAv*TMath::RadToDeg());
+      hDeltaThetaBack->Fill((Theta1-Theta2)*TMath::RadToDeg(),weight);
+      hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg(),weight);
+      hThetaRelBack->Fill(thetarel,weight);
+      hAngleBack->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg(),weight);
+      hThetaBack->Fill(thetaAv*TMath::RadToDeg(),weight);
+      hPhiBack->Fill(phiAv*TMath::RadToDeg(),weight);
+      hThetaPhiBack->Fill(thetaAv*TMath::RadToDeg(),phiAv*TMath::RadToDeg(),weight);
     }
   }
   
@@ -240,6 +263,7 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   hDeltaPhiBack->Sumw2();
   hThetaRelBack->Sumw2();
   hThetaBack->Sumw2();
+  hThetaPhiBack->Sumw2();
   hPhiBack->Sumw2();
   hDeltaThetaBack->Scale(0.1);
   hDeltaPhiBack->Scale(0.1);
@@ -248,7 +272,9 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   hPhiBack->Scale(0.1);
   hAngleBack->Scale(0.1);
   hAngle->Add(hAngleBack,-1);
-
+  hThetaPhiBack->Scale(0.1);
+  hThetaPhi->Add(hThetaPhiBack,-1);
+  if(hacc) hThetaPhi->Divide(hacc);
 
   Float_t val,eval;
   TCanvas *c1=new TCanvas();
@@ -314,6 +340,7 @@ void doCoincLAQU_01_02(const char *fileIn="coincLAQU_0102.root"){
   hThetaBack->Write();
   hPhiBack->Write();
   hAngle->Write();
+  hThetaPhi->Write();
   fo->Close();
   
 }
