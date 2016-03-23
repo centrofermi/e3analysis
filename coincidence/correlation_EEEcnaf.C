@@ -291,9 +291,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t1w->GetLeaf("IndoorTemperature")) t1w->SetBranchAddress("IndoorTemperature", &tin1);
         if(t1w->GetLeaf("OutdoorTemperature")) t1w->SetBranchAddress("OutdoorTemperature", &tout1);
         if(t1w->GetLeaf("Seconds")) t1w->SetBranchAddress("Seconds", &tweather1);
-        if(t2w->GetLeaf("Pressure")) t2w->SetBranchAddress("Pressure", &pressure1);
-        if(t2w->GetLeaf("IndoorTemperature")) t2w->SetBranchAddress("IndoorTemperature", &tin1);
-        if(t2w->GetLeaf("OutdoorTemperature")) t2w->SetBranchAddress("OutdoorTemperature", &tout1);
+        if(t2w->GetLeaf("Pressure")) t2w->SetBranchAddress("Pressure", &pressure2);
+        if(t2w->GetLeaf("IndoorTemperature")) t2w->SetBranchAddress("IndoorTemperature", &tin2);
+        if(t2w->GetLeaf("OutdoorTemperature")) t2w->SetBranchAddress("OutdoorTemperature", &tout2);
         if(t2w->GetLeaf("Seconds")) t2w->SetBranchAddress("Seconds", &tweather1);
 
 
