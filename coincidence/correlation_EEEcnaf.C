@@ -31,6 +31,7 @@
 #include "TRandom.h"
 #include <TH1I.h>
 #include <TH1F.h>
+#include <TLeaf.h>
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
@@ -223,20 +224,28 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
         TChain *t1 = new TChain("Events");
         TChain *t1h = new TChain("Header");
+        TChain *t1g = new TChain("gps");
+        TChain *t1w = new TChain("Weather");
         FILE *f1 = fopen(Form("lista%s%s_1",tel_code1,date),"r");
         char filename[300];
         while(fscanf(f1,"%s",filename)==1){
 	  t1->Add(filename);
 	  t1h->Add(filename);
+	  t1g->Add(filename);
+	  t1w->Add(filename);
 	}
         fclose(f1);
 
         TChain *t2 = new TChain("Events");
         TChain *t2h = new TChain("Header");
-        FILE *f2 = fopen(Form("lista%s%s_2",tel_code2,date),"r");
+	TChain *t2g = new TChain("gps");
+	TChain *t2w = new TChain("Weather");
+	FILE *f2 = fopen(Form("lista%s%s_2",tel_code2,date),"r");
         while(fscanf(f2,"%s",filename)==1){
 	  t2->Add(filename);
 	  t2h->Add(filename);
+	  t2g->Add(filename);
+	  t2w->Add(filename);
 	}
         fclose(f2);
 
@@ -251,9 +260,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
 	Float_t nsat1,nsat2;
+	Float_t nsat1gps=0,nsat2gps=0;
 	Int_t maskT1,maskM1,maskB1;
 	Int_t maskT2,maskM2,maskB2;
-
+	Float_t pressure1,tin1,tout1;
+	Float_t pressure2,tin2,tout2;
 
 	// track by track info
 	Float_t XDir1[24], YDir1[24], ZDir1[24];
@@ -262,7 +273,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
 	Float_t TrackLength1[24], TrackLength2[24];
 	Float_t DeltaTime1[24], DeltaTime2[24];
-
+	Double_t tweather1,tweather2;
 
         if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
         if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
@@ -272,6 +283,18 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t2h->GetLeaf("DeadChMaskMid")) t2h->SetBranchAddress("DeadChMaskMid", &maskM2);
         if(t1h->GetLeaf("DeadChMaskTop")) t1h->SetBranchAddress("DeadChMaskTop", &maskT1);
         if(t2h->GetLeaf("DeadChMaskTop")) t2h->SetBranchAddress("DeadChMaskTop", &maskT2);
+
+        if(t1g->GetLeaf("nSatellites")) t1g->SetBranchAddress("nSatellites", &nsat1gps);
+        if(t2g->GetLeaf("nSatellites")) t2g->SetBranchAddress("nSatellites", &nsat2gps);
+
+        if(t1w->GetLeaf("Pressure")) t1w->SetBranchAddress("Pressure", &pressure1);
+        if(t1w->GetLeaf("IndoorTemperature")) t1w->SetBranchAddress("IndoorTemperature", &tin1);
+        if(t1w->GetLeaf("OutdoorTemperature")) t1w->SetBranchAddress("OutdoorTemperature", &tout1);
+        if(t1w->GetLeaf("Seconds")) t1w->SetBranchAddress("Seconds", &tweather1);
+        if(t2w->GetLeaf("Pressure")) t2w->SetBranchAddress("Pressure", &pressure1);
+        if(t2w->GetLeaf("IndoorTemperature")) t2w->SetBranchAddress("IndoorTemperature", &tin1);
+        if(t2w->GetLeaf("OutdoorTemperature")) t2w->SetBranchAddress("OutdoorTemperature", &tout1);
+        if(t2w->GetLeaf("Seconds")) t2w->SetBranchAddress("Seconds", &tweather1);
 
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
@@ -442,6 +465,10 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t1h->GetLeaf("DeadChMaskBot")) treeTel1->Branch("maskB",&maskB1,"maskB/I");
         if(t1h->GetLeaf("DeadChMaskMid")) treeTel1->Branch("maskM",&maskM1,"maskM/I");
         if(t1h->GetLeaf("DeadChMaskTop")) treeTel1->Branch("maskT",&maskT1,"maskT/I");
+	if(t1w->GetLeaf("Pressure"))  treeTel1->Branch("Pressure",&pressure1,"Pressure/F");
+        if(t1w->GetLeaf("IndoorTemperature"))  treeTel1->Branch("IndoorTemperature",&tin1,"IndoorTemperature/F");
+        if(t1w->GetLeaf("OutdoorTemperature")) treeTel1->Branch("OutdoorTemperature",&tout1,"OutdoorTemperature/F");
+        if(t1w->GetLeaf("Seconds")) treeTel1->Branch("Seconds",&tweather1,"Seconds/D");
 
         TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
         treeTel2->Branch("year", &year, "year/I");
@@ -456,6 +483,10 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t2h->GetLeaf("DeadChMaskBot")) treeTel2->Branch("maskB",&maskB2,"maskB/I");
         if(t2h->GetLeaf("DeadChMaskMid")) treeTel2->Branch("maskM",&maskM2,"maskM/I");
         if(t2h->GetLeaf("DeadChMaskTop")) treeTel2->Branch("maskT",&maskT2,"maskT/I");
+	if(t2w->GetLeaf("Pressure"))  treeTel2->Branch("Pressure",&pressure2,"Pressure/F");
+        if(t2w->GetLeaf("IndoorTemperature"))  treeTel2->Branch("IndoorTemperature",&tin2,"IndoorTemperature/F");
+        if(t2w->GetLeaf("OutdoorTemperature")) treeTel2->Branch("OutdoorTemperature",&tout2,"OutdoorTemperature/F");
+        if(t2w->GetLeaf("Seconds")) treeTel2->Branch("Seconds",&tweather2,"Seconds/D");
 
         TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
         treeTimeCommon->Branch("year", &year, "year/I");
@@ -470,23 +501,27 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         for(Int_t i=1;i<=500;i++){
             if(htimePerRun1->GetBinContent(i) > 0){
 	        t1h->GetEvent(n1run);
+	        t1w->GetEvent(n1run);
 		n1run++;
                 runnumber = i-1;
                 timeduration = htimePerRun1->GetBinContent(i);
                 ratePerRun = hEventPerRun1->GetBinContent(i);
                 ratePerRunAll = hAllPerRun1->GetBinContent(i);
                 FractionGoodTrack = hGoodTrackPerRun1->GetBinContent(i);
+		tweather1 -= t1h->GetLeaf("RunStart")->GetValue();;
                 treeTel1->Fill();
             }
             if(htimePerRun2->GetBinContent(i) > 0){
 	        t2h->GetEvent(n2run);
+	        t2w->GetEvent(n2run);
 		n2run++;
                 runnumber = i-1;
                 timeduration = htimePerRun2->GetBinContent(i);
                 ratePerRun = hEventPerRun2->GetBinContent(i);
                 ratePerRunAll = hAllPerRun2->GetBinContent(i);
                 FractionGoodTrack = hGoodTrackPerRun2->GetBinContent(i);
-                treeTel2->Fill();
+   		tweather2 -= t2h->GetLeaf("RunStart")->GetValue();;
+		treeTel2->Fill();
             }
         }
 
@@ -532,6 +567,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
         treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
         if(t1->GetLeaf("Ntracks")) treeout->Branch("Ntracks1", &ntracks1,"Ntracks1/I");
+ 	treeout->Branch("Nsatellite1", &nsat1gps,"Nsatellite1/I");
 	treeout->Branch("ctime2", &ctime2, "ctime2/D");
 	treeout->Branch("ChiSquare2", ChiSquare2, "ChiSquare2/F");
 	treeout->Branch("TimeOfFlight2", TimeOfFlight2, "TimeOfFlight2/F");
@@ -541,6 +577,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
         treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
         if(t2->GetLeaf("Ntracks")) treeout->Branch("Ntracks2", &ntracks2,"Ntracks2/I");
+ 	treeout->Branch("Nsatellite2", &nsat2gps,"Nsatellite2/I");
 
 	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
 	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
@@ -550,6 +587,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
                 if(StatusCode1) continue;
+
+		if(t1->GetLeaf("GpsID")) t1g->GetEntry(t1->GetLeaf("GpsID")->GetValue());
+
 		// Calculate Theta1, Phi1
 		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
 		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
@@ -560,6 +600,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				size = cell[cellIndex].GetSize();
 				e2 = cell[i].At(j);
 				t2->GetEntry(e2); 
+
+				if(StatusCode2) continue;
+
+				if(t2->GetLeaf("GpsID")) t2g->GetEntry(t2->GetLeaf("GpsID")->GetValue());
+
 				ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; 
 				//DiffTime= ctime1 - ctime2;    
 				if((Seconds1-delay1-Seconds2+delay2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
