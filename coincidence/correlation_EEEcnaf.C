@@ -260,7 +260,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
 	Float_t nsat1,nsat2;
-	Float_t nsat1gps=0,nsat2gps=0;
+	Int_t nsat1gps=0,nsat2gps=0;
 	Int_t maskT1,maskM1,maskB1;
 	Int_t maskT2,maskM2,maskB2;
 	Float_t pressure1,tin1,tout1;
