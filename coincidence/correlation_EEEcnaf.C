@@ -294,7 +294,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t2w->GetLeaf("Pressure")) t2w->SetBranchAddress("Pressure", &pressure2);
         if(t2w->GetLeaf("IndoorTemperature")) t2w->SetBranchAddress("IndoorTemperature", &tin2);
         if(t2w->GetLeaf("OutdoorTemperature")) t2w->SetBranchAddress("OutdoorTemperature", &tout2);
-        if(t2w->GetLeaf("Seconds")) t2w->SetBranchAddress("Seconds", &tweather1);
+        if(t2w->GetLeaf("Seconds")) t2w->SetBranchAddress("Seconds", &tweather2);
 
 
 	t1->SetBranchAddress("RunNumber",&RunNumber1);
@@ -468,7 +468,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	if(t1w->GetLeaf("Pressure"))  treeTel1->Branch("Pressure",&pressure1,"Pressure/F");
         if(t1w->GetLeaf("IndoorTemperature"))  treeTel1->Branch("IndoorTemperature",&tin1,"IndoorTemperature/F");
         if(t1w->GetLeaf("OutdoorTemperature")) treeTel1->Branch("OutdoorTemperature",&tout1,"OutdoorTemperature/F");
-        if(t1w->GetLeaf("Seconds")) treeTel1->Branch("Seconds",&tweather1,"Seconds/D");
+        if(t1w->GetLeaf("Seconds")) treeTel1->Branch("TimeWeatherUpdate",&tweather1,"TimeWeatherUpdate/D");
 
         TTree *treeTel2 = new TTree("treeTel2", "run information of telescope 2");
         treeTel2->Branch("year", &year, "year/I");
@@ -486,7 +486,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	if(t2w->GetLeaf("Pressure"))  treeTel2->Branch("Pressure",&pressure2,"Pressure/F");
         if(t2w->GetLeaf("IndoorTemperature"))  treeTel2->Branch("IndoorTemperature",&tin2,"IndoorTemperature/F");
         if(t2w->GetLeaf("OutdoorTemperature")) treeTel2->Branch("OutdoorTemperature",&tout2,"OutdoorTemperature/F");
-        if(t2w->GetLeaf("Seconds")) treeTel2->Branch("Seconds",&tweather2,"Seconds/D");
+        if(t2w->GetLeaf("Seconds")) treeTel2->Branch("TimeWeatherUpdate",&tweather2,"TimeWeatherUpdate/D");
 
         TTree *treeTimeCommon = new TTree("treeTimeCommon", "time duration overlap run by run for the two telescopes");
         treeTimeCommon->Branch("year", &year, "year/I");
