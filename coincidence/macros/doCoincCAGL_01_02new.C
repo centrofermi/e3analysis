@@ -22,8 +22,8 @@ const Float_t tmax = 10000; //ns
 // (2)
 // periods
 Int_t yearRange[2] = {2014,2016};
-Int_t monthRange[2] = {1,2};
-Int_t dayRange[2] = {1,15};
+Int_t monthRange[2] = {1,12};
+Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -58,6 +58,7 @@ Float_t refRate[2] = {23,23};
 // thresholds for good events
 Float_t maxchisquare = 10*10/2;
 Float_t maxthetarel = 360;
+Int_t satEventThr = 7; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
@@ -172,6 +173,9 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   Int_t nsecGR = 0; // for good runs
   Int_t isec = -1; // used only in case the tree with time info is not available
 
+  Float_t neventsGR = 0;
+  Float_t neventsGRandSat = 0;
+
   if(telC){
     for(Int_t i=0; i < telC->GetEntries();i++){
       telC->GetEvent(i);
@@ -201,7 +205,8 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   
   Float_t Theta1,Theta2;
   Float_t Phi1,Phi2;
-  
+  Int_t nsatel1cur,nsatel2cur,ntrack1,ntrack2;
+
   Float_t v1[3],v2[3],vSP; // variable to recompute ThetaRel on the fly
   Float_t eff = 1; 
   
@@ -239,6 +244,11 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     Phi1 = t->GetLeaf("Phi1")->GetValue()*TMath::DegToRad();
     Phi2 = t->GetLeaf("Phi2")->GetValue()*TMath::DegToRad();
     
+    nsatel1cur = t->GetLeaf("Nsatellite1")->GetValue();
+    nsatel2cur = t->GetLeaf("Nsatellite2")->GetValue();
+    ntrack1 = t->GetLeaf("Ntracks1")->GetValue();
+    ntrack2 = t->GetLeaf("Ntracks2")->GetValue();
+
     if(recomputeThetaRel){ // recompute ThetaRel applying corrections
       Phi1 += phi1Corr*TMath::DegToRad();
       Phi2 += phi2Corr*TMath::DegToRad();
@@ -261,9 +271,6 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
       vSP = v1[0] + v1[1] + v1[2];
       
       thetarel = TMath::ACos(vSP)*TMath::RadToDeg();
-
-      if(thetarel > maxthetarel)
-	cout << thetarel << endl;
     }
     
     // cuts
@@ -271,6 +278,13 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     if(t->GetLeaf("ChiSquare1")->GetValue() > maxchisquare) continue;
     if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;
     
+
+    neventsGR++;
+
+    // reject events with not enough satellites
+    if(nsatel1cur < satEventThr || nsatel1cur < satEventThr) continue;
+
+    neventsGRandSat++;
     
     DeltaT = t->GetLeaf("DiffTime")->GetValue();
     
@@ -358,6 +372,9 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   
   text->Draw("SAME");
   
+  // correct nsecGR for the event rejected because of the number of satellites (event by event cut)
+  nsecGR *= neventsGRandSat/neventsGR;
+
   printf("n_day = %f\nn_dayGR = %f\n",nsec*1./86400,nsecGR*1./86400);
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
