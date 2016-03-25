@@ -461,7 +461,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel1->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
         treeTel1->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel1->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
-        if(t1h->GetLeaf("nSatellites")) treeTel1->Branch("Nsat",&nsat1,"nSat/F");
+        if(t1h->GetLeaf("nSatellites")) treeTel1->Branch("nSat",&nsat1,"nSat/F");
         if(t1h->GetLeaf("DeadChMaskBot")) treeTel1->Branch("maskB",&maskB1,"maskB/I");
         if(t1h->GetLeaf("DeadChMaskMid")) treeTel1->Branch("maskM",&maskM1,"maskM/I");
         if(t1h->GetLeaf("DeadChMaskTop")) treeTel1->Branch("maskT",&maskT1,"maskT/I");
@@ -479,7 +479,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         treeTel2->Branch("ratePerRun",&ratePerRunAll,"ratePerRun/F");
         treeTel2->Branch("rateHitPerRun",&ratePerRun,"rateHitPerRun/F");
         treeTel2->Branch("FractionGoodTrack",&FractionGoodTrack,"FractionGoodTrack/F");
-        if(t2h->GetLeaf("nSatellites")) treeTel2->Branch("Nsat",&nsat2,"nSat/F");
+        if(t2h->GetLeaf("nSatellites")) treeTel2->Branch("nSat",&nsat2,"nSat/F");
         if(t2h->GetLeaf("DeadChMaskBot")) treeTel2->Branch("maskB",&maskB2,"maskB/I");
         if(t2h->GetLeaf("DeadChMaskMid")) treeTel2->Branch("maskM",&maskM2,"maskM/I");
         if(t2h->GetLeaf("DeadChMaskTop")) treeTel2->Branch("maskT",&maskT2,"maskT/I");
