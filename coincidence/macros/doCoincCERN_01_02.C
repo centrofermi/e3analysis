@@ -31,11 +31,11 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 60;
 
 // telescope settings
 Float_t angle = -134.7993;//deg
-Float_t distance=15;
+Float_t distance=30;
 
 Float_t deltatCorr = -260; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections

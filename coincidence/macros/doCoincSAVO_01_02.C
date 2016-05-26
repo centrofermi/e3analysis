@@ -12,7 +12,7 @@
 #include "TPaveText.h"
 
 // setting for histos
-const Int_t nbint = 100;
+const Int_t nbint = 160;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 

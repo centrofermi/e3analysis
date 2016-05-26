@@ -12,13 +12,13 @@
 #include "TPaveText.h"
 
 // setting for histos
-const Int_t nbint = 200;
+const Int_t nbint = 50;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 
 // periods
-Int_t yearRange[2] = {2015,2016};
-Int_t monthRange[2] = {10,12};
+Int_t yearRange[2] = {2014,2016};
+Int_t monthRange[2] = {1,12};
 Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
@@ -31,19 +31,19 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 60;
+Float_t maxthetarel = 30;
 
 // telescope settings
-Float_t angle = -160.75;//deg
-Float_t distance=96;
+Float_t angle = 85.751;//deg
+Float_t distance=1076;//627;//96;//1182; (bolo 96)
 
-Float_t deltatCorr = 1440; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
+Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
 Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to adjust the phi angles of the telescopes
 Float_t phi1Corr = 0; // in degrees
-Float_t phi2Corr = 0; // in degrees (bolo -28)
+Float_t phi2Corr = 0; // in degrees
 
-void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
+void doCoincTORI_03_04(const char *fileIn="coincTORI_0304.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
 
@@ -167,11 +167,7 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
     Phi1 = t->GetLeaf("Phi1")->GetValue()*TMath::DegToRad();
     Phi2 = t->GetLeaf("Phi2")->GetValue()*TMath::DegToRad();
     
-    Float_t Phi1Old=Phi1;
-    Float_t Phi2Old=Phi2;
-
     if(recomputeThetaRel){ // recompute ThetaRel applying corrections
-      // Phi1=Phi2;
       Phi1 -= phi1Corr*TMath::DegToRad();
       Phi2 -= phi2Corr*TMath::DegToRad();
       if(Phi1 > 2*TMath::Pi()) Phi1 -= 2*TMath::Pi();
@@ -194,14 +190,12 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
       
       thetarel = TMath::ACos(vSP)*TMath::RadToDeg();
     }
-
-    if(TMath::Cos(Theta1-Theta2) < 0.5) continue;
     
     // cuts
     if(thetarel > maxthetarel) continue;
+ 
     if(t->GetLeaf("ChiSquare1")->GetValue() > maxchisquare) continue;
-    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;
-    
+    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;   
     
     DeltaT = t->GetLeaf("DiffTime")->GetValue();
     
@@ -210,21 +204,19 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
     else phiAv = (Phi1+Phi2)*0.5 + TMath::Pi();
     thetaAv = (Theta1+Theta2)*0.5;
     
-    //   phiAv = Phi2;
-
     // extra cuts if needed
-    //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
+    //if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
     h->Fill(DeltaT-corr);
-    if(TMath::Abs(DeltaT-corr) < 1000){
+    if(TMath::Abs(DeltaT-corr) < 500){
       hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRel->Fill(thetarel);
       hAngle->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
     }
-    else if(TMath::Abs(DeltaT-corr) > 2000 && TMath::Abs(DeltaT-corr) < 12000){
+    else if(TMath::Abs(DeltaT-corr) > 1000 && TMath::Abs(DeltaT-corr) < 6000){
       hDeltaThetaBack->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRelBack->Fill(thetarel);
@@ -252,11 +244,12 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
   ff->SetParName(2,"sigma");
   ff->SetParName(3,"background");
   ff->SetParName(4,"bin width");
-  ff->SetParameter(0,42369);
+  //  ff->SetParameter(0,42369);
+  //ff->FixParameter(0,160*0.6);
   ff->SetParameter(1,0);
-  //  ff->SetParLimits(2,10,1000);
-  ff->SetParameter(2,150); // fix witdh if needed
-  ff->SetParLimits(2,200,400); // fix witdh if needed
+  ff->SetParLimits(2,150,400);
+  //  ff->SetParameter(2,150); // fix witdh if needed
+  ff->SetParameter(2,250); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,(tmax-tmin)/nbint); // bin width
 
@@ -296,7 +289,7 @@ void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputBOLO-01-04.root","RECREATE");
+  TFile *fo = new TFile("outputTORI-03-04.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

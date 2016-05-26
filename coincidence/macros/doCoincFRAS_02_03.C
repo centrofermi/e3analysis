@@ -12,7 +12,7 @@
 #include "TPaveText.h"
 
 // setting for histos
-const Int_t nbint = 100;
+const Int_t nbint = 200;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 
@@ -31,7 +31,7 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 60;
 
 // telescope settings
 Float_t angle = -124.5;//deg

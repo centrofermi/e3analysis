@@ -34,7 +34,7 @@ Float_t refRate[2] = {23,23};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 60;
 
 // telescope settings
 Float_t angle = 72.1926821864; //deg

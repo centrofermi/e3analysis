@@ -31,7 +31,7 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 20;
 
 // telescope settings
 Float_t angle = -147.92;//deg

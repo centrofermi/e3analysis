@@ -17,7 +17,7 @@ const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 
 // periods
-Int_t yearRange[2] = {2014,2015};
+Int_t yearRange[2] = {2014,2016};
 Int_t monthRange[2] = {1,12};
 Int_t dayRange[2] = {1,31};
 
@@ -31,10 +31,10 @@ Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
-Float_t maxthetarel = 360;
+Float_t maxthetarel = 60;
 
 // telescope settings
-Float_t angle = -164.0556;//deg
+Float_t angle = -164.0556+45;//deg
 Float_t distance=204;//627;//96;//1182; (bolo 96)
 
 Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
