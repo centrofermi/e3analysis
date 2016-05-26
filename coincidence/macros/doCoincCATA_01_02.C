@@ -24,7 +24,7 @@ Int_t dayRange[2] = {1,31};
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
 Float_t fracGT[2] = {0.9,0.9};
-Float_t rateMin[2] = {10,10};
+Float_t rateMin[2] = {7,9};
 Float_t rateMax[2] = {70,70};
 Float_t minmissingHitFrac[2] = {-1,-1};
 Float_t maxmissingHitFrac[2] = {1,1};
