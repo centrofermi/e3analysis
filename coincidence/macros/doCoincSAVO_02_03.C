@@ -34,16 +34,18 @@ Float_t maxchisquare = 10;
 Float_t maxthetarel = 30;
 
 // telescope settings
-Float_t angle = -147.92;//deg
-Float_t distance=1416;//627;//96;//1182; (bolo 96)
+Float_t angle = -141.24;//deg
+Float_t distance=1710;//627;//96;//1182; (bolo 96)
 
 Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
 Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 0; // in degrees
-Float_t phi2Corr = 0; // in degrees
+Float_t deltaphicorr = -20;
+Float_t deltaphischoolcorr = -5;
+Float_t phi1Corr = -15; // in degrees
+Float_t phi2Corr = 5; // in degrees
 
-void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
+void doCoincSAVO_02_03(const char *fileIn="coincSAVO_0203.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
 
@@ -193,9 +195,9 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
     
     // cuts
     if(thetarel > maxthetarel) continue;
- 
     if(t->GetLeaf("ChiSquare1")->GetValue() > maxchisquare) continue;
-    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;   
+    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;
+    
     
     DeltaT = t->GetLeaf("DiffTime")->GetValue();
     
@@ -205,7 +207,7 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
     thetaAv = (Theta1+Theta2)*0.5;
     
     // extra cuts if needed
-    //if(TMath::Cos(Phi1-Phi2) < 0.) continue;
+    //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
@@ -244,12 +246,10 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
   ff->SetParName(2,"sigma");
   ff->SetParName(3,"background");
   ff->SetParName(4,"bin width");
-  //  ff->SetParameter(0,42369);
-  //ff->FixParameter(0,160*0.6);
+  ff->SetParameter(0,42369);
   ff->SetParameter(1,0);
-  ff->SetParLimits(2,150,400);
-  //  ff->SetParameter(2,150); // fix witdh if needed
-  ff->SetParameter(2,250); // fix witdh if needed
+  ff->SetParLimits(2,10,1000);
+  ff->SetParameter(2,150); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,(tmax-tmin)/nbint); // bin width
 
@@ -289,7 +289,7 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputTORI-02-03.root","RECREATE");
+  TFile *fo = new TFile("outputSAVO-02-03.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

@@ -24,26 +24,29 @@ Int_t dayRange[2] = {1,31};
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
 Float_t fracGT[2] = {0.9,0.9};
-Float_t rateMin[2] = {20,20};
+Float_t rateMin[2] = {10,10};
 Float_t rateMax[2] = {70,70};
 Float_t minmissingHitFrac[2] = {-1,-1};
 Float_t maxmissingHitFrac[2] = {1,1};
+
+// experiment to autocorrect for efficiency variation
+Float_t refRate[2] = {23,23};
 
 // thresholds for good events
 Float_t maxchisquare = 10;
 Float_t maxthetarel = 30;
 
 // telescope settings
-Float_t angle = -147.92;//deg
-Float_t distance=1416;//627;//96;//1182; (bolo 96)
+Float_t angle = -163.62; //deg
+Float_t distance=3034;
 
 Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
 Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to adjust the phi angles of the telescopes
 Float_t phi1Corr = 0; // in degrees
-Float_t phi2Corr = 0; // in degrees
+Float_t phi2Corr = 0; // in degrees (bolo -28)
 
-void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
+void doCoincCATA_01_02(const char *fileIn="coincCATA_0102.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
 
@@ -72,17 +75,22 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
   
   // quality info of runs
   Bool_t runstatus[2][10][12][31][500]; //#telescope, year-2007, month, day, run
-  
+  Float_t effTel[2][10][12][31][500];
+
+  Float_t rateGT;
+
   if(tel[0] && tel[1]){
     for(Int_t i=0;i < 2;i++){ // loop on telescopes
       for(Int_t j=0;j < tel[i]->GetEntries();j++){ // loop on runs
 	tel[i]->GetEvent(j);
+	rateGT = tel[i]->GetLeaf("FractionGoodTrack")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue();
+
 	Int_t aday = (tel[i]->GetLeaf("year")->GetValue()-2007) * 1000 + tel[i]->GetLeaf("month")->GetValue()*50 + tel[i]->GetLeaf("day")->GetValue();
 
 	if(aday < adayMin || aday > adayMax) continue;
 	if(tel[i]->GetLeaf("FractionGoodTrack")->GetValue() < fracGT[i]) continue; // cut on fraction of good track
 	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]) continue; // cut on the number of event
-	if(tel[i]->GetLeaf("ratePerRun")->GetValue() < rateMin[i] || tel[i]->GetLeaf("ratePerRun")->GetValue() > rateMax[i]) continue; // cut on the rate
+	if(rateGT < rateMin[i] || rateGT > rateMax[i]) continue; // cut on the rate
 	if(tel[i]->GetLeaf("run")->GetValue() > 499) continue; // run < 500
 
 	Float_t missinghitfrac = (tel[i]->GetLeaf("ratePerRun")->GetValue()-tel[i]->GetLeaf("rateHitPerRun")->GetValue()-2)/(tel[i]->GetLeaf("ratePerRun")->GetValue()-2);
@@ -90,7 +98,9 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
 
 	
 	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
+	effTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = 1;//rateGT/refRate[i];
 	
+
       }
     }
   }
@@ -136,6 +146,7 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
   Float_t Phi1,Phi2;
   
   Float_t v1[3],v2[3],vSP; // variable to recompute ThetaRel on the fly
+  Float_t eff = 1; 
   
   for(Int_t i=0;i<n;i++){
     t->GetEvent(i);
@@ -145,6 +156,10 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
     if(tel[0] && !runstatus[0][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())]) continue;
     
     if(tel[1] && !runstatus[1][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())]) continue;
+
+
+    eff = effTel[0][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())];
+    eff *= effTel[1][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())];
     
     Int_t timec = t->GetLeaf("ctime1")->GetValue();
     
@@ -193,9 +208,9 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
     
     // cuts
     if(thetarel > maxthetarel) continue;
- 
     if(t->GetLeaf("ChiSquare1")->GetValue() > maxchisquare) continue;
-    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;   
+    if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;
+    
     
     DeltaT = t->GetLeaf("DiffTime")->GetValue();
     
@@ -205,11 +220,11 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
     thetaAv = (Theta1+Theta2)*0.5;
     
     // extra cuts if needed
-    //if(TMath::Cos(Phi1-Phi2) < 0.) continue;
+    //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
     
-    h->Fill(DeltaT-corr);
+    h->Fill(DeltaT-corr,1./eff);
     if(TMath::Abs(DeltaT-corr) < 500){
       hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
@@ -244,12 +259,10 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
   ff->SetParName(2,"sigma");
   ff->SetParName(3,"background");
   ff->SetParName(4,"bin width");
-  //  ff->SetParameter(0,42369);
-  //ff->FixParameter(0,160*0.6);
+  ff->SetParameter(0,42369);
   ff->SetParameter(1,0);
-  ff->SetParLimits(2,150,400);
-  //  ff->SetParameter(2,150); // fix witdh if needed
-  ff->SetParameter(2,250); // fix witdh if needed
+  ff->SetParLimits(2,10,1000);
+  ff->SetParameter(2,350); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,(tmax-tmin)/nbint); // bin width
 
@@ -289,7 +302,7 @@ void doCoincTORI_02_03(const char *fileIn="coincTORI_0203.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputTORI-02-03.root","RECREATE");
+  TFile *fo = new TFile("outputCATA-01-02.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();
