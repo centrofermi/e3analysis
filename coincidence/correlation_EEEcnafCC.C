@@ -89,7 +89,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 //
 // Data are read from the two ROOT trees created for each telescope
 //
-  DiffCut *= 1E+9;
   corrWindow*=1E+9;
 
    TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
@@ -546,6 +545,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 				t2->GetEntry(e2); 
 
 				DiffTime13= ctime12 - ctime34;    
+				DiffTime13 *= 1E+9;
 
 				if(TMath::Abs(DiffTime13) <= corrWindow) treeout->Fill();
 			}
