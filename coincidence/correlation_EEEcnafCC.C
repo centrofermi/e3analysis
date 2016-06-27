@@ -279,7 +279,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
         t1->GetEntry(        i1); t1min = ctime12;
         cout << "start " << Int_t(ctime12) << endl;        
 
-        startTime = ctime1;
+        startTime = ctime12;
 
         i1 = nent12 - 1;
 	t1->GetEntry( i1); t1max = ctime12;
