@@ -115,7 +115,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 //
 
    TFile *fin1 = new TFile(coinc1);
-   TFile *fin2 = new TFile(coinc1);
+   TFile *fin2 = new TFile(coinc2);
 
    TTree *t1 = (TTree *) fin1->Get("tree");
    TTree *tel1 = (TTree *) fin1->Get("treeTel1");
