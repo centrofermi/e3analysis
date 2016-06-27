@@ -137,14 +137,12 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 //
         Int_t year,month,day;
 
-	UInt_t RunNumber1, RunNumber2;
-	UInt_t RunNumber3, RunNumber4;
-	UInt_t EventNumber1, EventNumber2;
-	UInt_t EventNumber3, EventNumber4;
-	UInt_t StatusCode1, StatusCode2;
-	UInt_t StatusCode3, StatusCode4;
-	UInt_t Seconds1, Seconds2;
-	UInt_t Seconds3, Seconds4;
+	Int_t RunNumber1, RunNumber2;
+	Int_t RunNumber3, RunNumber4;
+	Int_t EventNumber1, EventNumber2;
+	Int_t EventNumber3, EventNumber4;
+	Int_t Seconds1, Seconds2;
+	Int_t Seconds3, Seconds4;
 	ULong64_t Nanoseconds1, Nanoseconds2;
 	ULong64_t Nanoseconds3, Nanoseconds4;
 //	ULong64_t UniqueRunId1, UniqueRunId2;
@@ -228,8 +226,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	t1->SetBranchAddress("RunNumber2",&RunNumber2);
 	t1->SetBranchAddress("EventNumber1",&EventNumber1);
 	t1->SetBranchAddress("EventNumber2",&EventNumber2);
-	t1->SetBranchAddress("StatusCode1",&StatusCode1);
-	t1->SetBranchAddress("StatusCode2",&StatusCode2);
 	t1->SetBranchAddress("Seconds1",&Seconds1);
 	t1->SetBranchAddress("Seconds2",&Seconds2);
 	t1->SetBranchAddress("Nanoseconds1",&Nanoseconds1);
@@ -251,8 +247,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	t2->SetBranchAddress("RunNumber2",&RunNumber4);
 	t2->SetBranchAddress("EventNumber1",&EventNumber3);
 	t2->SetBranchAddress("EventNumber2",&EventNumber4);
-	t2->SetBranchAddress("StatusCode1",&StatusCode3);
-	t2->SetBranchAddress("StatusCode2",&StatusCode4);
 	t2->SetBranchAddress("Seconds1",&Seconds3);
 	t2->SetBranchAddress("Seconds2",&Seconds4);
 	t2->SetBranchAddress("Nanoseconds1",&Nanoseconds3);
@@ -289,21 +283,21 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
         Double_t startTime;
 
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
-        Int_t i1 = 0;StatusCode1=1;
-        while(StatusCode1) {t1->GetEntry(        i1); t1min = ctime12;i1++;}
+        Int_t i1 = 0;
+        t1->GetEntry(        i1); t1min = ctime12;
         cout << "start " << Seconds1 << endl;        
 
         startTime = Seconds1;
 
-        i1 = nent12 - 5; StatusCode1=1;	
-        while(StatusCode1) {t1->GetEntry( i1); t1max = ctime12;i1--;}
-        cout << "end " << Seconds1 << " " << StatusCode1 << endl;
-        Int_t i2 = 0; StatusCode3=1;
-	while(StatusCode3) {t2->GetEntry(        i2); t2min = ctime34;i2++;}
+        i1 = nent12 - 1;
+	t1->GetEntry( i1); t1max = ctime12;
+        cout << "end " << Seconds1 << " " << endl;
+        Int_t i2 = 0; 
+	t2->GetEntry(        i2); t2min = ctime34;
         cout << "start " << Seconds2 << endl;
-        if(startTime > Seconds2) startTime = Seconds2;
-        i2 = nent34 - 1; StatusCode2=1;
-	while(StatusCode3) {t2->GetEntry(i2); t2max = ctime34;i2--;}
+        if(startTime > Seconds3) startTime = Seconds2;
+        i2 = nent34 - 1; 
+	t2->GetEntry(i2); t2max = ctime34;
         cout << "end " << Seconds2<< endl;
 
 	range1 = t1max - t1min;
@@ -322,10 +316,8 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
                 hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
 
                 hAllPerRun1->Fill(RunNumber1);
-                if(StatusCode1==0){
-                    hEventPerRun1->Fill(RunNumber1); 
-                    if(ChiSquare1[0] < 10) hGoodTrackPerRun1->Fill(RunNumber1);
-                }
+		hEventPerRun1->Fill(RunNumber1); 
+		if(ChiSquare1[0] < 10) hGoodTrackPerRun1->Fill(RunNumber1);
        }
        hGoodTrackPerRun1->Divide(hEventPerRun1);
 
@@ -334,10 +326,8 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
                 hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
-                if(StatusCode3==0){
-                    hEventPerRun2->Fill(RunNumber2);    
-                    if(ChiSquare2[0] < 10) hGoodTrackPerRun2->Fill(RunNumber2);
-                }
+		hEventPerRun2->Fill(RunNumber2);    
+		if(ChiSquare2[0] < 10) hGoodTrackPerRun2->Fill(RunNumber2);
        }
        hGoodTrackPerRun2->Divide(hEventPerRun2);
 
@@ -384,7 +374,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	for (Int_t i = 0; i < nent34; i++) {
 		t2->GetEntry(i);
 		cellIndex = (Int_t)((ctime34 - tmin) / DiffCut);
-		if (cellIndex >= 0 && cellIndex < ncells && StatusCode3==0) {
+		if (cellIndex >= 0 && cellIndex < ncells) {
 			size = cell[cellIndex].GetSize();
 			cell[cellIndex].Set(size+1);
 			cell[cellIndex][size] = i;
@@ -554,7 +544,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	for(e1 = 0; e1 < nent12; e1++) {
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
-                if(StatusCode1) continue;
 
 		// Calculate Theta1, Phi1
 		cellIndex = (Int_t)((ctime12 - tmin) / DiffCut);
@@ -565,14 +554,9 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 				e2 = cell[i].At(j);
 				t2->GetEntry(e2); 
 
-				if(StatusCode3) continue;
-
 				DiffTime13= ctime12 - ctime34;    
 
-                                if(StatusCode1) ChiSquare1[0] = 1000;
-                                if(StatusCode3) ChiSquare2[0] = 1000;
-
-				if(TMath::Abs(DiffTime13) <= corrWindow && StatusCode1 == 0 && StatusCode3 == 0 && StatusCode2 == 0 && StatusCode4 == 0) treeout->Fill();
+				if(TMath::Abs(DiffTime13) <= corrWindow) treeout->Fill();
 			}
 		}
 	}
