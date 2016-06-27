@@ -148,10 +148,10 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
         Int_t ntracks3,ntracks4;
-	Float_t nsat1,nsat2;
-	Float_t nsat3,nsat4;
- 	Int_t nsat1gps=0,nsat2gps=0;
- 	Int_t nsat3gps=0,nsat4gps=0;
+	Int_t nsat1,nsat2;
+	Int_t nsat3,nsat4;
+ 	Float_t nsat1gps=0,nsat2gps=0;
+ 	Float_t nsat3gps=0,nsat4gps=0;
 	Int_t maskT1,maskM1,maskB1;
 	Int_t maskT2,maskM2,maskB2;
 	Int_t maskT3,maskM3,maskB3;
@@ -226,10 +226,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	t1->SetBranchAddress("RunNumber2",&RunNumber2);
 	t1->SetBranchAddress("EventNumber1",&EventNumber1);
 	t1->SetBranchAddress("EventNumber2",&EventNumber2);
-	t1->SetBranchAddress("Seconds1",&Seconds1);
-	t1->SetBranchAddress("Seconds2",&Seconds2);
-	t1->SetBranchAddress("Nanoseconds1",&Nanoseconds1);
-	t1->SetBranchAddress("Nanoseconds2",&Nanoseconds2);
         if(t1->GetLeaf("Ntracks1")) t1->SetBranchAddress("Ntracks1", &ntracks1);
         if(t1->GetLeaf("Ntracks2")) t1->SetBranchAddress("Ntracks2", &ntracks2);
 	t1->SetBranchAddress("Theta1",&Theta1);
@@ -247,10 +243,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	t2->SetBranchAddress("RunNumber2",&RunNumber4);
 	t2->SetBranchAddress("EventNumber1",&EventNumber3);
 	t2->SetBranchAddress("EventNumber2",&EventNumber4);
-	t2->SetBranchAddress("Seconds1",&Seconds3);
-	t2->SetBranchAddress("Seconds2",&Seconds4);
-	t2->SetBranchAddress("Nanoseconds1",&Nanoseconds3);
-	t2->SetBranchAddress("Nanoseconds2",&Nanoseconds4);
         if(t2->GetLeaf("Ntracks1")) t2->SetBranchAddress("Ntracks1", &ntracks3);
         if(t2->GetLeaf("Ntracks2")) t2->SetBranchAddress("Ntracks2", &ntracks4);
 	t2->SetBranchAddress("Theta1",&Theta3);
@@ -285,20 +277,20 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
         Int_t i1 = 0;
         t1->GetEntry(        i1); t1min = ctime12;
-        cout << "start " << Seconds1 << endl;        
+        cout << "start " << Int_t(ctime12) << endl;        
 
-        startTime = Seconds1;
+        startTime = ctime1;
 
         i1 = nent12 - 1;
 	t1->GetEntry( i1); t1max = ctime12;
-        cout << "end " << Seconds1 << " " << endl;
+        cout << "end " << Int_t(ctime12) << " " << endl;
         Int_t i2 = 0; 
 	t2->GetEntry(        i2); t2min = ctime34;
-        cout << "start " << Seconds2 << endl;
-        if(startTime > Seconds3) startTime = Seconds2;
+        cout << "start " << Int_t(ctime34) << endl;
+        if(startTime > Int_t(ctime34)) startTime = Seconds2;
         i2 = nent34 - 1; 
 	t2->GetEntry(i2); t2max = ctime34;
-        cout << "end " << Seconds2<< endl;
+        cout << "end " << Int_t(ctime34)<< endl;
 
 	range1 = t1max - t1min;
 	range2 = t2max - t2min;
@@ -313,7 +305,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 // collect info on run duration and rate
        for(Int_t e1 = 0; e1 < nent12; e1++) {
                 t1->GetEntry(e1);
-                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
+                hexposure1->SetBinContent(hexposure1->FindBin(ctime12-startTime),RunNumber1);
 
                 hAllPerRun1->Fill(RunNumber1);
 		hEventPerRun1->Fill(RunNumber1); 
@@ -323,7 +315,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 
        for(Int_t e2 = 0; e2 < nent34; e2++) {
                 t2->GetEntry(e2);
-                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
+                hexposure2->SetBinContent(hexposure2->FindBin(ctime34-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
 		hEventPerRun2->Fill(RunNumber2);    
