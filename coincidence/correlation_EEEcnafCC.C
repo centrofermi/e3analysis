@@ -298,12 +298,12 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
         i1 = nent12 - 5; StatusCode1=1;	
         while(StatusCode1) {t1->GetEntry( i1); t1max = ctime12;i1--;}
         cout << "end " << Seconds1 << " " << StatusCode1 << endl;
-        Int_t i2 = 0; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(        i2); t2min = ctime34;i2++;}
+        Int_t i2 = 0; StatusCode3=1;
+	while(StatusCode3) {t2->GetEntry(        i2); t2min = ctime34;i2++;}
         cout << "start " << Seconds2 << endl;
         if(startTime > Seconds2) startTime = Seconds2;
         i2 = nent34 - 1; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(i2); t2max = ctime34;i2--;}
+	while(StatusCode3) {t2->GetEntry(i2); t2max = ctime34;i2--;}
         cout << "end " << Seconds2<< endl;
 
 	range1 = t1max - t1min;
@@ -334,7 +334,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
                 hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
-                if(StatusCode2==0){
+                if(StatusCode3==0){
                     hEventPerRun2->Fill(RunNumber2);    
                     if(ChiSquare2[0] < 10) hGoodTrackPerRun2->Fill(RunNumber2);
                 }
@@ -384,7 +384,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	for (Int_t i = 0; i < nent34; i++) {
 		t2->GetEntry(i);
 		cellIndex = (Int_t)((ctime34 - tmin) / DiffCut);
-		if (cellIndex >= 0 && cellIndex < ncells && StatusCode2==0) {
+		if (cellIndex >= 0 && cellIndex < ncells && StatusCode3==0) {
 			size = cell[cellIndex].GetSize();
 			cell[cellIndex].Set(size+1);
 			cell[cellIndex][size] = i;
@@ -565,14 +565,14 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 				e2 = cell[i].At(j);
 				t2->GetEntry(e2); 
 
-				if(StatusCode2) continue;
+				if(StatusCode3) continue;
 
 				DiffTime13= ctime12 - ctime34;    
 
                                 if(StatusCode1) ChiSquare1[0] = 1000;
-                                if(StatusCode2) ChiSquare2[0] = 1000;
+                                if(StatusCode3) ChiSquare2[0] = 1000;
 
-				if(TMath::Abs(DiffTime13) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
+				if(TMath::Abs(DiffTime13) <= corrWindow && StatusCode1 == 0 && StatusCode3 == 0 && StatusCode2 == 0 && StatusCode4 == 0) treeout->Fill();
 			}
 		}
 	}
