@@ -35,89 +35,27 @@
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1,Double_t corrWindow=1E-4);
+void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Double_t DiffCut=0.1,Double_t corrWindow=1E-4);
 
 int main(int argc,char *argv[]){
+  
+  if(argc < 4)
+    printf("you need to specify fileinput1 fileinput2 fileoutput\n");
 
-  printf("DEBUG\n");
+  char *in1 = argv[1];
+  char *in2 = argv[2];
+  char *out = argv[3];
 
-  char *date = NULL;
-  char *sc1 = NULL;
-  char *sc2 = NULL;
-  char *path = NULL;
-
-  Double_t delay1=0;
-  Double_t delay2=0;
   Double_t cell=0.1;
   Double_t window=1E-4;
 
   printf("list of options to overwrite the config file infos:\n");
-  printf("-d DATE = to pass the date from line command\n");
-  printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
-  printf("-p PATH = to pass the path of the reco dirs\n");
-  printf("\nOptional features:\n");
   printf("-cell cell_time_window = cell time window in seconds (default = 0.1)\n");
   printf("-window corr_time_window = correlation time window to define output in seconds (default = 1E-4)\n");
-  printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
-  printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
 
   int kNoConfigFile = 0;
 
-  for(Int_t i=1;i < argc;i++){
-    if(CfrString(argv[i],"-d")){
-      if(i+1 > argc){
-        printf("date is missing\n");
-	return 1;
-      }
-       
-      date = argv[i+1];
-      i++;
-      kNoConfigFile++;
-    }
-    if(CfrString(argv[i],"-s")){                       
-      if(i+2 > argc){
-        printf("Two schools name have to be provided\n");
-        return 2;
-      }
- 
-      sc1 = argv[i+1];
-      sc2 = argv[i+2];
-
-      i+=2;
-      kNoConfigFile++;
-   }
-   if(CfrString(argv[i],"-p")){
-      if(i+1 > argc){
-        printf("path is missing\n");
-        return 1;
-      }
-
-      path = argv[i+1];
-      i++;  
-      kNoConfigFile++;
-    }
-
-   if(CfrString(argv[i],"-delay1")){
-      if(i+1 > argc){
-        printf("time delay (tel1) missing\n");
-        return 1;
-      }
-      sscanf(argv[i+1],"%lf",&delay1);
-      printf("Add a time delay for telescope1 of %f s\n",delay1);
-      i++;  
-    }
-
-   if(CfrString(argv[i],"-delay2")){
-      if(i+1 > argc){
-        printf("time delay (tel2) missing\n");
-        return 1;
-      }
-      sscanf(argv[i+1],"%lf",&delay2);
-      printf("Add a time delay for telescope2 of %f s\n",delay2);
-
-      i++;  
-    }
-
+  for(Int_t i=4;i < argc;i++){
    if(CfrString(argv[i],"-cell")){
       if(i+1 > argc){
         printf("cell time window missing\n");
@@ -138,13 +76,13 @@ int main(int argc,char *argv[]){
 
   }
 
-  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2,cell,window);
+  correlation_EEE(in1,in2,out,cell,window);
 
   return 0;
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t delay1,Double_t delay2,Double_t DiffCut,Double_t corrWindow)
+void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Double_t DiffCut,Double_t corrWindow)
 {
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
@@ -174,164 +112,175 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 // Open and read the configuration file
 //
 
-
-        const char *tel_code1;
-	const char *tel_code2;
-	const char *date;
-	const char *path;
-
-        if(! kNoConfigFile){
-	  ifstream config;
-	  config.open("./config_correlation_EEE.txt", ios::in);
-	  //Check the existence of the config file
-	  if(!config.is_open()){
-	    cout << "Please check the config file (config_correlation_EEE.txt)!" << endl;
-	    return;
-	  }
-	  
-	  TString tmp1, tmp2, tmp3, tmp4;
-	  config >> tmp1; // Read the first line of the config file (telescope code 1)
-	  tel_code1 = new char[tmp1.Length() + 1];
-	  if(! mysc1) tel_code1 = tmp1.Data();
-	  else tel_code1 = mysc1;
-	  config >> tmp2; // Read the first line of the config file (telescope code 2)
-	  tel_code2 = new char[tmp2.Length() + 1];
-	  if(! mysc2) tel_code2 = tmp2.Data();
-	  else tel_code2 = mysc2;
-	  config >> tmp3; // Read the second line of the config file (date)
-	  date = new char[tmp3.Length() + 1];
-	  if(! mydata) date = tmp3.Data();
-	  else date=mydata;
-	  config >> tmp4; // Read the third line of the config file (data path)
-	  path = new char[tmp4.Length() + 1];
-	  if(! mypath) path = tmp4.Data();
-	  else path=mypath;
-	}
-        else{
-          tel_code1 = mysc1,tel_code2 = mysc2,date=mydata,path=mypath;  
-        }
-
-// select date
-	Int_t year,month,day;
-        sscanf(date,"%d-%d-%d",&year,&month,&day);
-
-
 //
 // Input files
 //
-        system(Form("ls %s/%s/%s/*.root >lista%s%s_1",path,tel_code1,date,tel_code1,date));
-        system(Form("ls %s/%s/%s/*.root >lista%s%s_2",path,tel_code2,date,tel_code2,date));
 
-        TChain *t1 = new TChain("Events");
+   TFile *fin1 = new TFile(coinc1);
+   TFile *fin2 = new TFile(coinc1);
+
+   TTree *t1 = (TTree *) fin1->Get("tree");
+   TTree *tel1 = (TTree *) fin1->Get("treeTel1");
+   TTree *tel2 = (TTree *) fin1->Get("treeTel2");
+   TTree *t2 = (TTree *) fin2->Get("tree");
+   TTree *tel3 = (TTree *) fin2->Get("treeTel1");
+   TTree *tel4 = (TTree *) fin2->Get("treeTel2");
+
+   /*
         TChain *t1h = new TChain("Header");
         TChain *t1g = new TChain("gps");
         TChain *t1w = new TChain("Weather");
-        FILE *f1 = fopen(Form("lista%s%s_1",tel_code1,date),"r");
-        char filename[300];
-        while(fscanf(f1,"%s",filename)==1){
-	  t1->Add(filename);
-	  t1h->Add(filename);
-	  t1g->Add(filename);
-	  t1w->Add(filename);
-	}
-        fclose(f1);
-
-        TChain *t2 = new TChain("Events");
-        TChain *t2h = new TChain("Header");
-	TChain *t2g = new TChain("gps");
-	TChain *t2w = new TChain("Weather");
-	FILE *f2 = fopen(Form("lista%s%s_2",tel_code2,date),"r");
-        while(fscanf(f2,"%s",filename)==1){
-	  t2->Add(filename);
-	  t2h->Add(filename);
-	  t2g->Add(filename);
-	  t2w->Add(filename);
-	}
-        fclose(f2);
+   */
 
 //
 // Define input tree structure	
 //
+        Int_t year,month,day;
+
 	UInt_t RunNumber1, RunNumber2;
+	UInt_t RunNumber3, RunNumber4;
 	UInt_t EventNumber1, EventNumber2;
+	UInt_t EventNumber3, EventNumber4;
 	UInt_t StatusCode1, StatusCode2;
+	UInt_t StatusCode3, StatusCode4;
 	UInt_t Seconds1, Seconds2;
+	UInt_t Seconds3, Seconds4;
 	ULong64_t Nanoseconds1, Nanoseconds2;
+	ULong64_t Nanoseconds3, Nanoseconds4;
 //	ULong64_t UniqueRunId1, UniqueRunId2;
         Int_t ntracks1,ntracks2;
+        Int_t ntracks3,ntracks4;
 	Float_t nsat1,nsat2;
-	Int_t nsat1gps=0,nsat2gps=0;
+	Float_t nsat3,nsat4;
+ 	Int_t nsat1gps=0,nsat2gps=0;
+ 	Int_t nsat3gps=0,nsat4gps=0;
 	Int_t maskT1,maskM1,maskB1;
 	Int_t maskT2,maskM2,maskB2;
+	Int_t maskT3,maskM3,maskB3;
+	Int_t maskT4,maskM4,maskB4;
 	Float_t pressure1,tin1,tout1;
 	Float_t pressure2,tin2,tout2;
+	Float_t pressure3,tin3,tout3;
+	Float_t pressure4,tin4,tout4;
 
 	// track by track info
-	Float_t XDir1[24], YDir1[24], ZDir1[24];
-	Float_t XDir2[24], YDir2[24], ZDir2[24];
-	Float_t ChiSquare1[24], ChiSquare2[24];
-	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
-	Float_t TrackLength1[24], TrackLength2[24];
-	Float_t DeltaTime1[24], DeltaTime2[24];
-	Double_t tweather1,tweather2;
-
-        if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
-        if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
-        if(t1h->GetLeaf("DeadChMaskBot")) t1h->SetBranchAddress("DeadChMaskBot", &maskB1);
-        if(t2h->GetLeaf("DeadChMaskBot")) t2h->SetBranchAddress("DeadChMaskBot", &maskB2);
-        if(t1h->GetLeaf("DeadChMaskMid")) t1h->SetBranchAddress("DeadChMaskMid", &maskM1);
-        if(t2h->GetLeaf("DeadChMaskMid")) t2h->SetBranchAddress("DeadChMaskMid", &maskM2);
-        if(t1h->GetLeaf("DeadChMaskTop")) t1h->SetBranchAddress("DeadChMaskTop", &maskT1);
-        if(t2h->GetLeaf("DeadChMaskTop")) t2h->SetBranchAddress("DeadChMaskTop", &maskT2);
-
-        if(t1g->GetLeaf("nSatellites")) t1g->SetBranchAddress("nSatellites", &nsat1gps);
-        if(t2g->GetLeaf("nSatellites")) t2g->SetBranchAddress("nSatellites", &nsat2gps);
-
-        if(t1w->GetLeaf("Pressure")) t1w->SetBranchAddress("Pressure", &pressure1);
-        if(t1w->GetLeaf("IndoorTemperature")) t1w->SetBranchAddress("IndoorTemperature", &tin1);
-        if(t1w->GetLeaf("OutdoorTemperature")) t1w->SetBranchAddress("OutdoorTemperature", &tout1);
-        if(t1w->GetLeaf("Seconds")) t1w->SetBranchAddress("Seconds", &tweather1);
-        if(t2w->GetLeaf("Pressure")) t2w->SetBranchAddress("Pressure", &pressure2);
-        if(t2w->GetLeaf("IndoorTemperature")) t2w->SetBranchAddress("IndoorTemperature", &tin2);
-        if(t2w->GetLeaf("OutdoorTemperature")) t2w->SetBranchAddress("OutdoorTemperature", &tout2);
-        if(t2w->GetLeaf("Seconds")) t2w->SetBranchAddress("Seconds", &tweather2);
-
-
-	t1->SetBranchAddress("RunNumber",&RunNumber1);
-	t1->SetBranchAddress("EventNumber",&EventNumber1);
-	t1->SetBranchAddress("StatusCode",&StatusCode1);
-	t1->SetBranchAddress("Seconds",&Seconds1);
-	t1->SetBranchAddress("Nanoseconds",&Nanoseconds1);
-        if(t1->GetLeaf("Ntracks")) t1->SetBranchAddress("Ntracks", &ntracks1);
-	t1->SetBranchAddress("XDir",XDir1);
-	t1->SetBranchAddress("YDir",YDir1);
-	t1->SetBranchAddress("ZDir",ZDir1);
-	t1->SetBranchAddress("ChiSquare", ChiSquare1);
-	t1->SetBranchAddress("TimeOfFlight", TimeOfFlight1);
-	t1->SetBranchAddress("TrackLength", TrackLength1);
-	t1->SetBranchAddress("DeltaTime", DeltaTime1);
-//	t1->SetBranchAddress("UniqueRunId", &UniqueRunId1);
-	t2->SetBranchAddress("RunNumber",&RunNumber2);
-	t2->SetBranchAddress("EventNumber",&EventNumber2);
-	t2->SetBranchAddress("StatusCode",&StatusCode2);
-	t2->SetBranchAddress("Seconds",&Seconds2);
-	t2->SetBranchAddress("Nanoseconds",&Nanoseconds2);
-//	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
-        if(t2->GetLeaf("Ntracks")) t2->SetBranchAddress("Ntracks", &ntracks2);
-	t2->SetBranchAddress("XDir",XDir2);
-	t2->SetBranchAddress("YDir",YDir2);
-	t2->SetBranchAddress("ZDir",ZDir2);
-	t2->SetBranchAddress("ChiSquare", ChiSquare2);
-	t2->SetBranchAddress("TimeOfFlight", TimeOfFlight2);
-	t2->SetBranchAddress("TrackLength", TrackLength2);
-	t2->SetBranchAddress("DeltaTime", DeltaTime2);
-//	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
-
-	Int_t nent1 = t1->GetEntries();
-	Int_t nent2 = t2->GetEntries();
-
-	Double_t ctime1, ctime2;
 	Float_t Theta1,Phi1,Theta2,Phi2;
+	Float_t Theta3,Phi3,Theta4,Phi4;
+	Float_t ChiSquare1[24], ChiSquare2[24];
+	Float_t ChiSquare3[24], ChiSquare4[24];
+	Float_t TimeOfFlight1[24], TimeOfFlight2[24];
+	Float_t TimeOfFlight3[24], TimeOfFlight4[24];
+	Float_t TrackLength1[24], TrackLength2[24];
+	Float_t TrackLength3[24], TrackLength4[24];
+	Float_t DeltaTime1[24], DeltaTime2[24];
+	Float_t DeltaTime3[24], DeltaTime4[24];
+	Double_t tweather1,tweather2;
+	Double_t tweather3,tweather4;
+
+	Double_t DiffTime12;
+	Double_t DiffTime34;
+	Double_t DiffTime13;
+
+        if(t1->GetLeaf("Nsatellites1")) t1->SetBranchAddress("Nsatellites1", &nsat1);
+        if(t1->GetLeaf("Nsatellites2")) t1->SetBranchAddress("Nsatellites2", &nsat2);
+        if(t2->GetLeaf("Nsatellites1")) t2->SetBranchAddress("Nsatellites1", &nsat3);
+        if(t2->GetLeaf("Nsatellites2")) t2->SetBranchAddress("Nsatellites2", &nsat4);
+        if(tel1->GetLeaf("maskB")) tel1->SetBranchAddress("maskB", &maskB1);
+        if(tel2->GetLeaf("maskB")) tel2->SetBranchAddress("maskB", &maskB2);
+        if(tel3->GetLeaf("maskB")) tel3->SetBranchAddress("maskB", &maskB3);
+        if(tel4->GetLeaf("maskB")) tel4->SetBranchAddress("maskB", &maskB4);
+        if(tel1->GetLeaf("maskM")) tel1->SetBranchAddress("maskM", &maskM1);
+        if(tel2->GetLeaf("maskM")) tel2->SetBranchAddress("maskM", &maskM2);
+        if(tel3->GetLeaf("maskM")) tel3->SetBranchAddress("maskM", &maskM3);
+        if(tel4->GetLeaf("maskM")) tel4->SetBranchAddress("maskM", &maskM4);
+        if(tel1->GetLeaf("maskT")) tel1->SetBranchAddress("maskT", &maskT1);
+        if(tel2->GetLeaf("maskT")) tel2->SetBranchAddress("maskT", &maskT2);
+        if(tel3->GetLeaf("maskT")) tel3->SetBranchAddress("maskT", &maskT3);
+        if(tel4->GetLeaf("maskT")) tel4->SetBranchAddress("maskT", &maskT4);
+
+        if(tel1->GetLeaf("nSat")) tel1->SetBranchAddress("nSat", &nsat1gps);
+        if(tel2->GetLeaf("nSat")) tel2->SetBranchAddress("nSat", &nsat2gps);
+        if(tel3->GetLeaf("nSat")) tel3->SetBranchAddress("nSat", &nsat3gps);
+        if(tel4->GetLeaf("nSat")) tel4->SetBranchAddress("nSat", &nsat4gps);
+
+        if(tel1->GetLeaf("Pressure")) tel1->SetBranchAddress("Pressure", &pressure1);
+        if(tel1->GetLeaf("IndoorTemperature")) tel1->SetBranchAddress("IndoorTemperature", &tin1);
+        if(tel1->GetLeaf("OutdoorTemperature")) tel1->SetBranchAddress("OutdoorTemperature", &tout1);
+        if(tel1->GetLeaf("TimeWeatherUpdate")) tel1->SetBranchAddress("TimeWeatherUpdate", &tweather1);
+        if(tel2->GetLeaf("Pressure")) tel2->SetBranchAddress("Pressure", &pressure2);
+        if(tel2->GetLeaf("IndoorTemperature")) tel2->SetBranchAddress("IndoorTemperature", &tin2);
+        if(tel2->GetLeaf("OutdoorTemperature")) tel2->SetBranchAddress("OutdoorTemperature", &tout2);
+        if(tel2->GetLeaf("TimeWeatherUpdate")) tel2->SetBranchAddress("TimeWeatherUpdate", &tweather2);
+        if(tel3->GetLeaf("Pressure")) tel3->SetBranchAddress("Pressure", &pressure1);
+        if(tel3->GetLeaf("IndoorTemperature")) tel3->SetBranchAddress("IndoorTemperature", &tin3);
+        if(tel3->GetLeaf("OutdoorTemperature")) tel3->SetBranchAddress("OutdoorTemperature", &tout3);
+        if(tel3->GetLeaf("TimeWeatherUpdate")) tel3->SetBranchAddress("TimeWeatherUpdate", &tweather3);
+        if(tel4->GetLeaf("Pressure")) tel4->SetBranchAddress("Pressure", &pressure1);
+        if(tel4->GetLeaf("IndoorTemperature")) tel4->SetBranchAddress("IndoorTemperature", &tin4);
+        if(tel4->GetLeaf("OutdoorTemperature")) tel4->SetBranchAddress("OutdoorTemperature", &tout4);
+        if(tel4->GetLeaf("TimeWeatherUpdate")) tel4->SetBranchAddress("TimeWeatherUpdate", &tweather4);
+
+
+	t1->SetBranchAddress("year",&year);
+	t1->SetBranchAddress("month",&month);
+	t1->SetBranchAddress("day",&day);
+	t1->SetBranchAddress("RunNumber1",&RunNumber1);
+	t1->SetBranchAddress("RunNumber2",&RunNumber2);
+	t1->SetBranchAddress("EventNumber1",&EventNumber1);
+	t1->SetBranchAddress("EventNumber2",&EventNumber2);
+	t1->SetBranchAddress("StatusCode1",&StatusCode1);
+	t1->SetBranchAddress("StatusCode2",&StatusCode2);
+	t1->SetBranchAddress("Seconds1",&Seconds1);
+	t1->SetBranchAddress("Seconds2",&Seconds2);
+	t1->SetBranchAddress("Nanoseconds1",&Nanoseconds1);
+	t1->SetBranchAddress("Nanoseconds2",&Nanoseconds2);
+        if(t1->GetLeaf("Ntracks1")) t1->SetBranchAddress("Ntracks1", &ntracks1);
+        if(t1->GetLeaf("Ntracks2")) t1->SetBranchAddress("Ntracks2", &ntracks2);
+	t1->SetBranchAddress("Theta1",&Theta1);
+	t1->SetBranchAddress("Phi1",&Phi1);
+	t1->SetBranchAddress("Theta2",&Theta2);
+	t1->SetBranchAddress("Phi2",&Phi2);
+	t1->SetBranchAddress("ChiSquare1", ChiSquare1);
+	t1->SetBranchAddress("ChiSquare2", ChiSquare2);
+	t1->SetBranchAddress("TimeOfFlight1", TimeOfFlight1);
+	t1->SetBranchAddress("TimeOfFlight2", TimeOfFlight2);
+	t1->SetBranchAddress("TrackLength1", TrackLength1);
+	t1->SetBranchAddress("TrackLength2", TrackLength2);
+	t1->SetBranchAddress("DiffTime", &DiffTime12);
+	t2->SetBranchAddress("RunNumber1",&RunNumber3);
+	t2->SetBranchAddress("RunNumber2",&RunNumber4);
+	t2->SetBranchAddress("EventNumber1",&EventNumber3);
+	t2->SetBranchAddress("EventNumber2",&EventNumber4);
+	t2->SetBranchAddress("StatusCode1",&StatusCode3);
+	t2->SetBranchAddress("StatusCode2",&StatusCode4);
+	t2->SetBranchAddress("Seconds1",&Seconds3);
+	t2->SetBranchAddress("Seconds2",&Seconds4);
+	t2->SetBranchAddress("Nanoseconds1",&Nanoseconds3);
+	t2->SetBranchAddress("Nanoseconds2",&Nanoseconds4);
+        if(t2->GetLeaf("Ntracks1")) t2->SetBranchAddress("Ntracks1", &ntracks3);
+        if(t2->GetLeaf("Ntracks2")) t2->SetBranchAddress("Ntracks2", &ntracks4);
+	t2->SetBranchAddress("Theta1",&Theta3);
+	t2->SetBranchAddress("Phi1",&Phi4);
+	t2->SetBranchAddress("Theta2",&Theta3);
+	t2->SetBranchAddress("Phi2",&Phi4);
+	t2->SetBranchAddress("ChiSquare1", ChiSquare3);
+	t2->SetBranchAddress("ChiSquare2", ChiSquare4);
+	t2->SetBranchAddress("TimeOfFlight1", TimeOfFlight3);
+	t2->SetBranchAddress("TimeOfFlight2", TimeOfFlight4);
+	t2->SetBranchAddress("TrackLength1", TrackLength3);
+	t2->SetBranchAddress("TrackLength2", TrackLength4);
+	t2->SetBranchAddress("DiffTime", &DiffTime34);
+
+	Int_t nent12 = t1->GetEntries();
+	Int_t nent34 = t2->GetEntries();
+
+	Double_t ctime12, ctime34;
+	Double_t ctime2, ctime4;
+	t1->SetBranchAddress("ctime1", &ctime12);
+	t1->SetBranchAddress("ctime2", &ctime2);
+	t2->SetBranchAddress("ctime1", &ctime34);
+	t2->SetBranchAddress("ctime2", &ctime4);
+
 
 //      
 // Find time range
@@ -341,26 +290,26 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
         Int_t i1 = 0;StatusCode1=1;
-        while(StatusCode1) {t1->GetEntry(        i1); ctime1 = (Double_t ) Seconds1 - delay1 + (Double_t ) Nanoseconds1*1E-09; t1min = ctime1;i1++;}
-        cout << "start " << Seconds1 - delay1 << endl;        
+        while(StatusCode1) {t1->GetEntry(        i1); t1min = ctime12;i1++;}
+        cout << "start " << Seconds1 << endl;        
 
-        startTime = Seconds1-delay1;
+        startTime = Seconds1;
 
-        i1 = nent1 - 5; StatusCode1=1;	
-        while(StatusCode1) {t1->GetEntry( i1); ctime1 = (Double_t ) Seconds1 - delay1 + (Double_t ) Nanoseconds1*1E-09; t1max = ctime1;i1--;}
-        cout << "end " << Seconds1 -delay1 << " " << StatusCode1 << endl;
+        i1 = nent12 - 5; StatusCode1=1;	
+        while(StatusCode1) {t1->GetEntry( i1); t1max = ctime12;i1--;}
+        cout << "end " << Seconds1 << " " << StatusCode1 << endl;
         Int_t i2 = 0; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(        i2); ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; t2min = ctime2;i2++;}
-        cout << "start " << Seconds2 - delay2 << endl;
-        if(startTime > Seconds2-delay2) startTime = Seconds2-delay2;
-        i2 = nent2 - 1; StatusCode2=1;
-	while(StatusCode2) {t2->GetEntry(i2); ctime2 = (Double_t ) Seconds2 -delay2 + (Double_t ) Nanoseconds2*1E-09; t2max = ctime2;i2--;}
-        cout << "end " << Seconds2 -delay2<< endl;
+	while(StatusCode2) {t2->GetEntry(        i2); t2min = ctime34;i2++;}
+        cout << "start " << Seconds2 << endl;
+        if(startTime > Seconds2) startTime = Seconds2;
+        i2 = nent34 - 1; StatusCode2=1;
+	while(StatusCode2) {t2->GetEntry(i2); t2max = ctime34;i2--;}
+        cout << "end " << Seconds2<< endl;
 
 	range1 = t1max - t1min;
 	range2 = t2max - t2min;
 	cout.setf(ios::fixed);
-	cout <<"N.entry1 = "<< nent1<<"   N.entry2 = "<<nent2 << endl;
+	cout <<"N.entry1 = "<< nent12<<"   N.entry2 = "<<nent34 << endl;
 	cout << "Time range file 1: " << t1min << " --> " << t1max << ", range = " << range1 << endl;
 	cout << "Time range file 2: " << t2min << " --> " << t2max << ", range = " << range2 << endl;
 	Double_t tmin = TMath::Min(t1min, t2min);
@@ -368,9 +317,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	cout << "Common measure time interval = "<<(TMath::Min(t1max, t2max)-TMath::Max(t1min, t2min))<< " s"<<endl;
 
 // collect info on run duration and rate
-       for(Int_t e1 = 0; e1 < nent1; e1++) {
+       for(Int_t e1 = 0; e1 < nent12; e1++) {
                 t1->GetEntry(e1);
-                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-delay1-startTime),RunNumber1);
+                hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-startTime),RunNumber1);
 
                 hAllPerRun1->Fill(RunNumber1);
                 if(StatusCode1==0){
@@ -380,9 +329,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
        }
        hGoodTrackPerRun1->Divide(hEventPerRun1);
 
-       for(Int_t e2 = 0; e2 < nent2; e2++) {
+       for(Int_t e2 = 0; e2 < nent34; e2++) {
                 t2->GetEntry(e2);
-                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-delay2-startTime),RunNumber2);
+                hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
                 if(StatusCode2==0){
@@ -432,10 +381,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 // loop on TTree #2 and add each entry to corresponding cell
 //
 	Int_t cellIndex, size;
-	for (Int_t i = 0; i < nent2; i++) {
+	for (Int_t i = 0; i < nent34; i++) {
 		t2->GetEntry(i);
-		ctime2 = (Double_t ) Seconds2 -delay2+ (Double_t ) Nanoseconds2*1E-09;
-		cellIndex = (Int_t)((ctime2 - tmin) / DiffCut);
+		cellIndex = (Int_t)((ctime34 - tmin) / DiffCut);
 		if (cellIndex >= 0 && cellIndex < ncells && StatusCode2==0) {
 			size = cell[cellIndex].GetSize();
 			cell[cellIndex].Set(size+1);
@@ -445,10 +393,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 //	
 // Define output correlation tree
 //
-	TFile *fileout = new TFile(Form("%s/%s-%s-%s.root",".",tel_code1,tel_code2,date), "RECREATE");
+	TFile *fileout = new TFile(out, "RECREATE");
         fileout->ls();
 
 	// fill tree with quality check per run
+	/*
 	Float_t ratePerRun,ratePerRunAll,FractionGoodTrack;
         Int_t timeduration,runnumber,runnumber2;
 
@@ -549,51 +498,66 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                 }      
               }
         }
-        
+	*/   
 
 	TTree *treeout = new TTree("tree", "Delta T");
 	Int_t e1, e2;	
-	Double_t DiffTime;
 	Float_t ThetaRel;
         treeout->Branch("year", &year, "year/I");
         treeout->Branch("month", &month, "month/I");
         treeout->Branch("day", &day, "day/I");
-	treeout->Branch("ctime1", &ctime1, "ctime1/D");
+	treeout->Branch("ctime1", &ctime12, "ctime1/D");
+	treeout->Branch("ctime2", &ctime2, "ctime1/D");
 	treeout->Branch("ChiSquare1", ChiSquare1, "ChiSquare1/F");
-	treeout->Branch("TimeOfFlight1", TimeOfFlight1, "TimeOfFlight1/F");
-	treeout->Branch("TrackLength1", TrackLength1, "TrackLength1/F");
-	treeout->Branch("Theta1", &Theta1, "Theta1/F");
-	treeout->Branch("Phi1", &Phi1, "Phi1/F");
-        treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
-        treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
-        if(t1->GetLeaf("Ntracks")) treeout->Branch("Ntracks1", &ntracks1,"Ntracks1/I");
- 	treeout->Branch("Nsatellite1", &nsat1gps,"Nsatellite1/I");
-	treeout->Branch("ctime2", &ctime2, "ctime2/D");
 	treeout->Branch("ChiSquare2", ChiSquare2, "ChiSquare2/F");
+	treeout->Branch("TimeOfFlight1", TimeOfFlight1, "TimeOfFlight1/F");
 	treeout->Branch("TimeOfFlight2", TimeOfFlight2, "TimeOfFlight2/F");
+	treeout->Branch("TrackLength1", TrackLength1, "TrackLength1/F");
 	treeout->Branch("TrackLength2", TrackLength2, "TrackLength2/F");
+	treeout->Branch("Theta1", &Theta1, "Theta1/F");
 	treeout->Branch("Theta2", &Theta2, "Theta2/F");
+	treeout->Branch("Phi1", &Phi1, "Phi1/F");
 	treeout->Branch("Phi2", &Phi2, "Phi2/F");
+        treeout->Branch("RunNumber1",&RunNumber1,"RunNumber1/I");
         treeout->Branch("RunNumber2",&RunNumber2,"RunNumber2/I");
+        treeout->Branch("EventNumber1",&EventNumber1,"EventNumber1/I");
         treeout->Branch("EventNumber2",&EventNumber2,"EventNumber2/I");
-        if(t2->GetLeaf("Ntracks")) treeout->Branch("Ntracks2", &ntracks2,"Ntracks2/I");
- 	treeout->Branch("Nsatellite2", &nsat2gps,"Nsatellite2/I");
+        if(t1->GetLeaf("Ntracks1")) treeout->Branch("Ntracks1", &ntracks1,"Ntracks1/I");
+        if(t1->GetLeaf("Ntracks2")) treeout->Branch("Ntracks2", &ntracks2,"Ntracks2/I");
+ 	treeout->Branch("Nsatellite1", &nsat1,"Nsatellite1/I");
+ 	treeout->Branch("Nsatellite2", &nsat2,"Nsatellite2/I");
 
-	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
-	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
+	treeout->Branch("ctime3", &ctime34, "ctime3/D");
+	treeout->Branch("ctime4", &ctime4, "ctime4/D");
+	treeout->Branch("ChiSquare3", ChiSquare3, "ChiSquare3/F");
+	treeout->Branch("ChiSquare4", ChiSquare4, "ChiSquare4/F");
+	treeout->Branch("TimeOfFlight3", TimeOfFlight3, "TimeOfFlight3/F");
+	treeout->Branch("TimeOfFlight4", TimeOfFlight4, "TimeOfFlight4/F");
+	treeout->Branch("TrackLength3", TrackLength3, "TrackLength3/F");
+	treeout->Branch("TrackLength4", TrackLength4, "TrackLength4/F");
+	treeout->Branch("Theta3", &Theta3, "Theta3/F");
+	treeout->Branch("Theta4", &Theta4, "Theta4/F");
+	treeout->Branch("Phi3", &Phi3, "Phi3/F");
+	treeout->Branch("Phi4", &Phi4, "Phi4/F");
+        treeout->Branch("RunNumber3",&RunNumber3,"RunNumber3/I");
+        treeout->Branch("RunNumber4",&RunNumber4,"RunNumber4/I");
+        treeout->Branch("EventNumber3",&EventNumber3,"EventNumber3/I");
+        treeout->Branch("EventNumber4",&EventNumber4,"EventNumber4/I");
+        if(t2->GetLeaf("Ntracks1")) treeout->Branch("Ntracks3", &ntracks3,"Ntracks3/I");
+        if(t2->GetLeaf("Ntracks2")) treeout->Branch("Ntracks4", &ntracks4,"Ntracks4/I");
+ 	treeout->Branch("Nsatellite3", &nsat3,"Nsatellite3/I");
+ 	treeout->Branch("Nsatellite4", &nsat4,"Nsatellite4/I");
+
+	treeout->Branch("DiffTime13", &DiffTime13, "DiffTime13/D");
 
 
-	for(e1 = 0; e1 < nent1; e1++) {
+	for(e1 = 0; e1 < nent12; e1++) {
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
                 if(StatusCode1) continue;
 
-		if(t1->GetLeaf("GpsID")) t1g->GetEntry(t1->GetLeaf("GpsID")->GetValue());
-
 		// Calculate Theta1, Phi1
-		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
-		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
-		cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
+		cellIndex = (Int_t)((ctime12 - tmin) / DiffCut);
 		for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
 			if (i < 0 || i >= ncells) continue;
 			for (Int_t j = 0; j < cell[i].GetSize(); j++) {
@@ -603,20 +567,12 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 				if(StatusCode2) continue;
 
-				if(t2->GetLeaf("GpsID")) t2g->GetEntry(t2->GetLeaf("GpsID")->GetValue());
-
-				ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; 
-				//DiffTime= ctime1 - ctime2;    
-				if((Seconds1-delay1-Seconds2+delay2)==0) DiffTime= (Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2;
-				else DiffTime=((Double_t ) Seconds1 -delay1 - (Double_t ) Seconds2 + delay2)*1E9 + ((Double_t ) Nanoseconds1 - (Double_t ) Nanoseconds2); 
-				// Calculate Theta2, Phi2
-				CalculateThetaPhi(XDir2[0], YDir2[0], ZDir2[0], Theta2, Phi2);
-				ThetaRel=TMath::ACos(TMath::Cos(Theta1*TMath::DegToRad())*TMath::Cos(Theta2*TMath::DegToRad())+TMath::Sin(Theta1*TMath::DegToRad())*TMath::Sin(Theta2*TMath::DegToRad())*TMath::Cos(Phi2*TMath::DegToRad()-Phi1*TMath::DegToRad()))/TMath::DegToRad();
+				DiffTime13= ctime12 - ctime34;    
 
                                 if(StatusCode1) ChiSquare1[0] = 1000;
                                 if(StatusCode2) ChiSquare2[0] = 1000;
 
-				if(TMath::Abs(DiffTime) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
+				if(TMath::Abs(DiffTime13) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
 			}
 		}
 	}
@@ -626,9 +582,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	cout << endl;
 	fileout->cd();
 	treeout->Write();
-        treeTel1->Write();
-        treeTel2->Write();
-        treeTimeCommon->Write();
 	fileout->Close();
 	cout<<"Correlation tree completed"<<endl;
 	
