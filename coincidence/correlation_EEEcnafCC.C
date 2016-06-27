@@ -38,7 +38,6 @@ void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Flo
 void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Double_t DiffCut=0.1,Double_t corrWindow=1E-4);
 
 int main(int argc,char *argv[]){
-  
   if(argc < 4)
     printf("you need to specify fileinput1 fileinput2 fileoutput\n");
 
@@ -90,7 +89,7 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 //
 // Data are read from the two ROOT trees created for each telescope
 //
-
+  DiffCut *= 1E+9;
   corrWindow*=1E+9;
 
    TH1I *hexposure1 = new TH1I("hexposure1","Active run number in a given second;second - time_first_event;run number telescope 1",100000,0,100000);
