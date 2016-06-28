@@ -244,8 +244,8 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
         if(t2->GetLeaf("Ntracks1")) t2->SetBranchAddress("Ntracks1", &ntracks3);
         if(t2->GetLeaf("Ntracks2")) t2->SetBranchAddress("Ntracks2", &ntracks4);
 	t2->SetBranchAddress("Theta1",&Theta3);
-	t2->SetBranchAddress("Phi1",&Phi4);
-	t2->SetBranchAddress("Theta2",&Theta3);
+	t2->SetBranchAddress("Phi1",&Phi3);
+	t2->SetBranchAddress("Theta2",&Theta4);
 	t2->SetBranchAddress("Phi2",&Phi4);
 	t2->SetBranchAddress("ChiSquare1", ChiSquare3);
 	t2->SetBranchAddress("ChiSquare2", ChiSquare4);
