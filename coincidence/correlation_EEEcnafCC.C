@@ -177,10 +177,10 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 	Double_t DiffTime34;
 	Double_t DiffTime13;
 
-        if(t1->GetLeaf("Nsatellites1")) t1->SetBranchAddress("Nsatellites1", &nsat1);
-        if(t1->GetLeaf("Nsatellites2")) t1->SetBranchAddress("Nsatellites2", &nsat2);
-        if(t2->GetLeaf("Nsatellites1")) t2->SetBranchAddress("Nsatellites1", &nsat3);
-        if(t2->GetLeaf("Nsatellites2")) t2->SetBranchAddress("Nsatellites2", &nsat4);
+        if(t1->GetLeaf("Nsatellite1")) t1->SetBranchAddress("Nsatellite1", &nsat1);
+        if(t1->GetLeaf("Nsatellite2")) t1->SetBranchAddress("Nsatellite2", &nsat2);
+        if(t2->GetLeaf("Nsatellite1")) t2->SetBranchAddress("Nsatellite1", &nsat3);
+        if(t2->GetLeaf("Nsatellite2")) t2->SetBranchAddress("Nsatellite2", &nsat4);
         if(tel1->GetLeaf("maskB")) tel1->SetBranchAddress("maskB", &maskB1);
         if(tel2->GetLeaf("maskB")) tel2->SetBranchAddress("maskB", &maskB2);
         if(tel3->GetLeaf("maskB")) tel3->SetBranchAddress("maskB", &maskB3);
