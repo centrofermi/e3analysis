@@ -535,8 +535,6 @@ void correlation_EEE(const char *coinc1,const char *coinc2,const char *out,Doubl
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
 
-		printf("%i %i\n",nsat1,nsat2);
-
 		// Calculate Theta1, Phi1
 		cellIndex = (Int_t)((ctime12 - tmin) / DiffCut);
 		for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
