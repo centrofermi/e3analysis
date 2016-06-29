@@ -65,11 +65,11 @@ Int_t satEventThr = 7; // minimum number of sattellite required in each event
 Float_t angle = -160.75; //deg
 Float_t distance=96;
 
-Float_t deltatCorr = 1440; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
+Float_t deltatCorr = 1470; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
 Float_t phi1Corr = 284; // in degrees (the one stored in the header)
-Float_t phi2Corr = 258; // in degrees
+Float_t phi2Corr = 278; // in degrees
 
 void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];

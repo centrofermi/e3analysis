@@ -37,11 +37,11 @@ Float_t maxthetarel = 60;
 Float_t angle = -160.75;//deg
 Float_t distance=96;
 
-Float_t deltatCorr = 1440; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
+Float_t deltatCorr = 1470; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
-Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to adjust the phi angles of the telescopes
+Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
 Float_t phi1Corr = 0; // in degrees
-Float_t phi2Corr = 0; // in degrees (bolo -28)
+Float_t phi2Corr = -20; // in degrees (bolo -28)
 
 void doCoincBOLO_01_04(const char *fileIn="coincBOLO_0104.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
