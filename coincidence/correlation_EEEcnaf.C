@@ -144,8 +144,13 @@ int main(int argc,char *argv[]){
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t delay1,Double_t delay2,Double_t DiffCut,Double_t corrWindow)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t extdelay1,Double_t extdelay2,Double_t DiffCut,Double_t corrWindow)
 {
+
+  Double_t delay1  =extdelay1;
+  Double_t delay2  =extdelay2;
+
+
 //
 // This macro correlates the events measured by two EEE telescopes according to their GPS time
 // within a time window = DiffCut
@@ -592,6 +597,14 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 		// Calculate Theta1, Phi1
 		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
+
+                // check if hightech gps and add 17 seconds
+                if(nsat1==0 && extdelay1==0){
+                    //printf("school 1 hightech gps -> add 17 seconds\n");
+                    delay1=17;
+                }
+                else delay1=extdelay1;  
+
 		ctime1 = (Double_t ) Seconds1 -delay1+ (Double_t ) Nanoseconds1*1E-09;
 		cellIndex = (Int_t)((ctime1 - tmin) / DiffCut);
 		for (Int_t i = cellIndex - 1; i <= cellIndex + 1; i++) {
@@ -604,6 +617,13 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				if(StatusCode2) continue;
 
 				if(t2->GetLeaf("GpsID")) t2g->GetEntry(t2->GetLeaf("GpsID")->GetValue());
+
+                                // check if hightech gps and add 17 seconds
+                                if(nsat2==0 && extdelay2==0){
+                                    //printf("school 2 hightech gps -> add 17 seconds\n");
+                                    delay2=17;
+                                }
+                                else delay2=extdelay2;
 
 				ctime2 = (Double_t ) Seconds2 - delay2 + (Double_t ) Nanoseconds2*1E-09; 
 				//DiffTime= ctime1 - ctime2;    
