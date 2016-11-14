@@ -372,6 +372,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Double_t tmax = TMath::Max(t1max, t2max);
 	cout << "Common measure time interval = "<<(TMath::Min(t1max, t2max)-TMath::Max(t1min, t2min))<< " s"<<endl;
 
+        if((TMath::Min(t1max, t2max)-TMath::Max(t1min, t2min)) < 0) return;
+
 // collect info on run duration and rate
        for(Int_t e1 = 0; e1 < nent1; e1++) {
                 t1->GetEntry(e1);
