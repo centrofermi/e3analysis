@@ -338,6 +338,29 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Double_t ctime1, ctime2;
 	Float_t Theta1,Phi1,Theta2,Phi2;
 
+        // replace delay if nsat==0 
+        Bool_t kreplacedelay=kTRUE;
+        for(Int_t i=0;i<t1h->GetEntries();i++){
+          t1h->GetEvent(i);
+          if(t1h->GetLeaf("nSatellites")->GetValue() > 0) kreplacedelay=kFALSE;
+        }
+        if(kreplacedelay){ 
+           extdelay1=17;
+           delay1=17;
+           printf("Delay 1 replace to 17 s\n");
+        }
+
+        kreplacedelay=kTRUE;
+        for(Int_t i=0;i<t2h->GetEntries();i++){
+          t2h->GetEvent(i);
+          if(t2h->GetLeaf("nSatellites")->GetValue() > 0) kreplacedelay=kFALSE;
+        }
+        if(kreplacedelay){
+           extdelay2=17;
+           delay2=17;
+           printf("Delay 2 replace to 17 s\n");
+        }
+
 //      
 // Find time range
 //
