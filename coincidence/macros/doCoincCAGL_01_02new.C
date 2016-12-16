@@ -13,15 +13,18 @@
 
 Int_t countBits(Int_t word);
 
+Float_t windowAlignment = 1000; // in ns (cut signal and background)
+
 // (1)
 // setting for histos
 const Int_t nbint = 200;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
+const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2014,2016};
+Int_t yearRange[2] = {2014,2017};
 Int_t monthRange[2] = {1,12};
 Int_t dayRange[2] = {1,31};
 
@@ -44,12 +47,12 @@ Int_t ndeadTopMax[2] = {23,23};
 Int_t ndeadTopMin[2] = {0,0};
 
 // requirement on the number of satellites in the run (average)
-Float_t minAvSat[2] = {0.,0.};
+Float_t minAvSat[2] = {4.,4.};
 Float_t maxAvSat[2] = {10,10};
 
 // time difference between weather info and the start of the run (it is negative!) allowed (in seconds)
 Int_t minWeathTimeDelay[2] = {-999999,-999999};
-Int_t maxWeathTimeDelay[2] = {1,1};
+Int_t maxWeathTimeDelay[2] = {3600,3600};
 
 // experiment to autocorrect for efficiency variation
 Float_t refRate[2] = {23,23};
@@ -57,23 +60,38 @@ Float_t refRate[2] = {23,23};
 // (3)
 // thresholds for good events
 Float_t maxchisquare = 10*10/2;
-Float_t maxthetarel = 360;
-Int_t satEventThr = 7; // minimum number of sattellite required in each event
+Float_t minthetarel = 0;
+Float_t maxthetarel = 60;
+Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
 Float_t angle = 72.1926821864; //deg
 Float_t distance=520;
 
-Float_t deltatCorr = -150; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
+Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236; // in degrees (the one stored in the header)
+Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
 Float_t phi2Corr = 100; // in degrees
 
 void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
-  Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
-  Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
+
+  // Print settings
+  printf("SETTINGS\nAnalyze output from new Analyzer\n");
+  printf("Input file = %s\n",fileIn);
+  printf("School distance = %f m, angle = %f deg\n",distance,angle);
+  printf("School orientation: tel1=%f deg, tel2=%f deg\n",phi1Corr,phi2Corr);
+  printf("Max Chi2 = %f\n",maxchisquare);
+  printf("Theta Rel Range = %f - %f deg\n",minthetarel,maxthetarel);
+  printf("Range for N sattellite in each run = (tel1) %f - %f, (tel2) %f - %f \n",minAvSat[0],maxAvSat[0],minAvSat[1],maxAvSat[1]);
+  printf("Min N satellite in a single event = %i\n",satEventThr);
+
+  Int_t adayMin = (yearRange[0]-2014) * 1000 + monthRange[0]*50 + dayRange[0];
+  Int_t adayMax = (yearRange[1]-2014) * 1000 + monthRange[1]*50 + dayRange[1];
+
+  Float_t nsigPeak=0;
+  Float_t nbackPeak=0;
 
   angle *= TMath::DegToRad();
 
@@ -88,6 +106,34 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   TH2F *hAngle = new TH2F("hAngle",";#Delta#theta (#circ);#Delta#phi (#circ}",20,-60,60,20,-360,360);
   TH2F *hAngleBack = new TH2F("hAngleBack",";#Delta#theta (#circ);#Delta#phi (#circ}",20,-60,60,20,-360,360);
 
+  TProfile *hModulation = new  TProfile("hModulation","#theta^{rel} < 10#circ;#phi - #alpha;dist (m)",50,0,360);
+  TProfile *hModulation2 = new  TProfile("hModulation2","#theta^{rel} < 10#circ;#phi - #alpha;dist (m)",50,0,360);
+  TProfile *hModulationAv = new  TProfile("hModulationAv","#theta^{rel} < 10#circ;#phi - #alpha;dist (m)",50,0,360);
+  TProfile *hModulationAvCorr = new  TProfile("hModulationAvCorr","#theta^{rel} < 10#circ;#phi - #alpha;diff (ns)",50,0,360);
+
+  TH1F *hnsigpeak = new TH1F("hnsigpeak","",50,0,360);
+  TH1F *hnbackpeak = new TH1F("hnbackpeak","",50,0,360);
+
+  TProfile *hSinTheta = new  TProfile("hSinTheta",";#phi - #alpha;sin(#theta)",50,0,360);
+  TProfile *hSinTheta2 = new  TProfile("hSinTheta2",";#phi - #alpha;sin(#theta)",50,0,360);
+
+  TH1F *hRunCut[2];
+  hRunCut[0] = new TH1F("hRunCut1","Reason for Run Rejection Tel-1;Reason;runs rejected",11,0,11);
+  hRunCut[1] = new TH1F("hRunCut2","Reason for Run Rejection Tel-2;Reason;runs rejected",11,0,11);
+
+  for(Int_t i=0;i<2;i++){
+    hRunCut[i]->Fill("DateRange",0);
+    hRunCut[i]->Fill("LowFractionGT",0);
+    hRunCut[i]->Fill("TimeDuration",0);
+    hRunCut[i]->Fill("rateGT",0);
+    hRunCut[i]->Fill("RunNumber",0);
+    hRunCut[i]->Fill("MissingHitFrac",0);
+    hRunCut[i]->Fill("DeadStripBot",0);
+    hRunCut[i]->Fill("DeadStripMid",0);
+    hRunCut[i]->Fill("DeadStripTop",0);
+    hRunCut[i]->Fill("NSatellites",0);
+    hRunCut[i]->Fill("NoGoodWeather",0);  
+  }
 
   TFile *f = new TFile(fileIn);
   TTree *t = (TTree *) f->Get("tree");
@@ -99,73 +145,92 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   TTree *telC = (TTree *) f->Get("treeTimeCommon");
   
   // quality info of runs
-  Bool_t runstatus[2][10][12][31][500]; //#telescope, year-2007, month, day, run
-  Float_t effTel[2][10][12][31][500];
-  Int_t nStripDeadBot[2][10][12][31][500];
-  Int_t nStripDeadMid[2][10][12][31][500];
-  Int_t nStripDeadTop[2][10][12][31][500];
+  const Int_t nyearmax = 5;
+  Bool_t runstatus[2][nyearmax][12][31][500]; //#telescope, year-2014, month, day, run
+  Float_t effTel[2][nyearmax][12][31][500];
+  Int_t nStripDeadBot[2][nyearmax][12][31][500];
+  Int_t nStripDeadMid[2][nyearmax][12][31][500];
+  Int_t nStripDeadTop[2][nyearmax][12][31][500];
 
   // sat info
-  Float_t NsatAv[2][10][12][31][500];
+  Float_t NsatAv[2][nyearmax][12][31][500];
 
   // weather info
-  Float_t pressureTel[2][10][12][31][500];
-  Float_t TempInTel[2][10][12][31][500];
-  Float_t TempOutTel[2][10][12][31][500];
-  Float_t timeWeath[2][10][12][31][500];
+  Float_t pressureTel[2][nyearmax][12][31][500];
+  Float_t TempInTel[2][nyearmax][12][31][500];
+  Float_t TempOutTel[2][nyearmax][12][31][500];
+  Float_t timeWeath[2][nyearmax][12][31][500];
 
   Float_t rateGT;
 
+  Float_t phirelative;
+  Float_t phirelative2;
+  Float_t phirelativeAv;
+
+  printf("Check Run quality\n");
+
   if(tel[0] && tel[1]){
     for(Int_t i=0;i < 2;i++){ // loop on telescopes
+      printf("Tel-%i\n",i+1);
       for(Int_t j=0;j < tel[i]->GetEntries();j++){ // loop on runs
 	tel[i]->GetEvent(j);
 	rateGT = tel[i]->GetLeaf("FractionGoodTrack")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue();
 
-	Int_t aday = (tel[i]->GetLeaf("year")->GetValue()-2007) * 1000 + tel[i]->GetLeaf("month")->GetValue()*50 + tel[i]->GetLeaf("day")->GetValue();
+	Int_t aday = (tel[i]->GetLeaf("year")->GetValue()-2014) * 1000 + tel[i]->GetLeaf("month")->GetValue()*50 + tel[i]->GetLeaf("day")->GetValue();
 
-	if(aday < adayMin || aday > adayMax) continue;
-	if(tel[i]->GetLeaf("FractionGoodTrack")->GetValue() < fracGT[i]) continue; // cut on fraction of good track
-	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]) continue; // cut on the number of event
-	if(rateGT < rateMin[i] || rateGT > rateMax[i]) continue; // cut on the rate
-	if(tel[i]->GetLeaf("run")->GetValue() > 499) continue; // run < 500
+	if(aday < adayMin || aday > adayMax){
+	  hRunCut[i]->Fill("DateRange",1); continue;}
+	if(tel[i]->GetLeaf("FractionGoodTrack")->GetValue() < fracGT[i]){
+	  hRunCut[i]->Fill("LowFractionGT",1); continue;} // cut on fraction of good track
+	if(tel[i]->GetLeaf("timeduration")->GetValue()*tel[i]->GetLeaf("rateHitPerRun")->GetValue() < hitevents[i]){
+	  hRunCut[i]->Fill("TimeDuration",1); continue;} // cut on the number of event
+	if(rateGT < rateMin[i] || rateGT > rateMax[i]){
+	  hRunCut[i]->Fill("rateGT",1); continue;} // cut on the rate
+	if(tel[i]->GetLeaf("run")->GetValue() > 499){
+	  hRunCut[i]->Fill("RunNumber",1); continue;} // run < 500
 
 	Float_t missinghitfrac = (tel[i]->GetLeaf("ratePerRun")->GetValue()-tel[i]->GetLeaf("rateHitPerRun")->GetValue()-2)/(tel[i]->GetLeaf("ratePerRun")->GetValue()-2);
-	if(missinghitfrac < minmissingHitFrac[i] || missinghitfrac > maxmissingHitFrac[i]) continue;
+	if(missinghitfrac < minmissingHitFrac[i] || missinghitfrac > maxmissingHitFrac[i]){
+	  hRunCut[i]->Fill("MissingHitFrac",1); continue;}
 		
 	// active strip maps
-	if(tel[i]->GetLeaf("maskB")) nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskB")->GetValue()));
-	if(tel[i]->GetLeaf("maskM")) nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskM")->GetValue()));
-	if(tel[i]->GetLeaf("maskT")) nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskT")->GetValue()));
+	if(tel[i]->GetLeaf("maskB")) nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskB")->GetValue()));
+	if(tel[i]->GetLeaf("maskM")) nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskM")->GetValue()));
+	if(tel[i]->GetLeaf("maskT")) nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = countBits(Int_t(tel[i]->GetLeaf("maskT")->GetValue()));
 
-	if(nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadBotMax[i] || nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadBotMin[i]) continue;
-	if(nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadMidMax[i] || nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadMidMin[i]) continue;
-	if(nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadTopMax[i] || nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadTopMin[i]) continue;
+	if(nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadBotMax[i] || nStripDeadBot[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadBotMin[i]) {
+	  hRunCut[i]->Fill("DeadStripBot",1); continue;}
+	if(nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadMidMax[i] || nStripDeadMid[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadMidMin[i]){
+	  hRunCut[i]->Fill("DeadStripMid",1); continue;}
+	if(nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > ndeadTopMax[i] || nStripDeadTop[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < ndeadTopMin[i]){
+	  hRunCut[i]->Fill("DeadStripTop",1); continue;}
 
 	// nsat averaged  per run
-	if(tel[i]->GetLeaf("nSat")) NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("nSat")->GetValue();
+	if(tel[i]->GetLeaf("nSat")) NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("nSat")->GetValue();
 
 
-	if(NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minAvSat[i] || NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxAvSat[i]) continue;
+	if(NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minAvSat[i] || NsatAv[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxAvSat[i]){
+	 hRunCut[i]->Fill("NSatellites",1); continue;}
 
 	// weather info
-	if(tel[i]->GetLeaf("Pressure")) pressureTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("Pressure")->GetValue();
-	if(tel[i]->GetLeaf("IndoorTemperature")) TempInTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("IndoorTemperature")->GetValue();
-	if(tel[i]->GetLeaf("OutdoorTemperature")) TempOutTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("OutdoorTemperature")->GetValue();
-	if(tel[i]->GetLeaf("TimeWeatherUpdate")) timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("TimeWeatherUpdate")->GetValue();
+	if(tel[i]->GetLeaf("Pressure")) pressureTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("Pressure")->GetValue();
+	if(tel[i]->GetLeaf("IndoorTemperature")) TempInTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("IndoorTemperature")->GetValue();
+	if(tel[i]->GetLeaf("OutdoorTemperature")) TempOutTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("OutdoorTemperature")->GetValue();
+	if(tel[i]->GetLeaf("TimeWeatherUpdate")) timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("TimeWeatherUpdate")->GetValue();
 
-	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]) continue;
+	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]){
+	  hRunCut[i]->Fill("NoGoodWeather",1); continue;}
 
 	// Set good runs
-	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
-	effTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2007][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = 1;//rateGT/refRate[i];
+	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
+	effTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = 1;//rateGT/refRate[i];
       }
     }
   }
   else{
     telC = NULL;
   }
-  
+  printf("Start to process correlations\n");
   Int_t n = t->GetEntries();
 
   // counter for seconds
@@ -185,9 +250,9 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
       
       if(telC->GetLeaf("run")->GetValue() > 499 || telC->GetLeaf("run2")->GetValue() > 499) continue;
       
-      if(!runstatus[0][Int_t(telC->GetLeaf("year")->GetValue())-2007][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())]) continue;
+      if(!runstatus[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())]) continue;
       
-      if(!runstatus[1][Int_t(telC->GetLeaf("year")->GetValue())-2007][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run2")->GetValue())]) continue;
+      if(!runstatus[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run2")->GetValue())]) continue;
       
       nsecGR += telC->GetLeaf("timeduration")->GetValue(); 
     }
@@ -215,13 +280,13 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     
     if(t->GetLeaf("RunNumber1") && (t->GetLeaf("RunNumber1")->GetValue() > 499 || t->GetLeaf("RunNumber2")->GetValue() > 499)) continue;
   
-    if(tel[0] && !runstatus[0][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())]) continue;
+    if(tel[0] && !runstatus[0][Int_t(t->GetLeaf("year")->GetValue())-2014][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())]) continue;
     
-    if(tel[1] && !runstatus[1][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())]) continue;
+    if(tel[1] && !runstatus[1][Int_t(t->GetLeaf("year")->GetValue())-2014][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())]) continue;
 
 
-    eff = effTel[0][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())];
-    eff *= effTel[1][Int_t(t->GetLeaf("year")->GetValue())-2007][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())];
+    eff = effTel[0][Int_t(t->GetLeaf("year")->GetValue())-2014][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber1")->GetValue())];
+    eff *= effTel[1][Int_t(t->GetLeaf("year")->GetValue())-2014][Int_t(t->GetLeaf("month")->GetValue())][Int_t(t->GetLeaf("day")->GetValue())][Int_t(t->GetLeaf("RunNumber2")->GetValue())];
     
     Int_t timec = t->GetLeaf("ctime1")->GetValue();
     
@@ -274,6 +339,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     }
     
     // cuts
+    if(thetarel < minthetarel) continue;
     if(thetarel > maxthetarel) continue;
     if(t->GetLeaf("ChiSquare1")->GetValue() > maxchisquare) continue;
     if(t->GetLeaf("ChiSquare2")->GetValue() > maxchisquare) continue;
@@ -291,21 +357,68 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     // get primary direction
     if(TMath::Abs(Phi1-Phi2) < TMath::Pi()) phiAv = (Phi1+Phi2)*0.5;
     else phiAv = (Phi1+Phi2)*0.5 + TMath::Pi();
+
     thetaAv = (Theta1+Theta2)*0.5;
     
     // extra cuts if needed
     //    if(TMath::Cos(Phi1-Phi2) < 0.) continue;
     
+    Float_t resFactor = 1;
+    if(thetarel > 10 ) resFactor *= 0.5;
+    if(thetarel > 20 ) resFactor *= 0.5;
+    if(thetarel > 30 ) resFactor *= 0.5;
+
     corr = distance * TMath::Sin(thetaAv)*TMath::Cos(phiAv-angle)/2.99792458000000039e-01 + deltatCorr;
-    
+
+    phirelative = (Phi1-angle)*TMath::RadToDeg();
+    if(phirelative < 0) phirelative += 360;
+    if(phirelative < 0) phirelative += 360;
+    if(phirelative > 360) phirelative -= 360;
+    if(phirelative > 360) phirelative -= 360;
+
+    phirelative2 = (Phi2-angle)*TMath::RadToDeg();
+    if(phirelative2 < 0) phirelative2 += 360;
+    if(phirelative2 < 0) phirelative2 += 360;
+    if(phirelative2 > 360) phirelative2 -= 360;
+    if(phirelative2 > 360) phirelative2 -= 360;
+
+    phirelativeAv = (phiAv-angle)*TMath::RadToDeg();
+    if(phirelativeAv < 0) phirelativeAv += 360;
+    if(phirelativeAv < 0) phirelativeAv += 360;
+    if(phirelativeAv > 360) phirelativeAv -= 360;
+    if(phirelativeAv > 360) phirelativeAv -= 360;
+
+
+    // if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment){
+      
+    // }
+
+    if(thetarel < 10){//cos(thetarel*TMath::DegToRad())>0.98 && sin(thetaAv)>0.1){
+      if(TMath::Abs(DeltaT- corr) < windowAlignment)
+	hModulationAvCorr->Fill(phirelativeAv,DeltaT-corr);
+      if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment){
+	hModulation->Fill(phirelative,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
+	hModulation2->Fill(phirelative2,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
+	hModulationAv->Fill(phirelativeAv,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
+	hSinTheta->Fill(phirelative,sin(thetaAv));
+	hSinTheta2->Fill(phirelative2,sin(thetaAv));
+	nsigPeak++;
+	hnsigpeak->Fill(phirelativeAv);
+      }
+      else if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment*10){
+	nbackPeak++;
+	hnbackpeak->Fill(phirelativeAv);
+      }
+    }
+
     h->Fill(DeltaT-corr,1./eff);
-    if(TMath::Abs(DeltaT-corr) < 500){
+    if(TMath::Abs(DeltaT-corr) < windowAlignment){
       hDeltaTheta->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhi->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRel->Fill(thetarel);
       hAngle->Fill((Theta1-Theta2)*TMath::RadToDeg(),(Phi1-Phi2)*TMath::RadToDeg());
     }
-    else if(TMath::Abs(DeltaT-corr) > 1000 && TMath::Abs(DeltaT-corr) < 6000){
+    else if(TMath::Abs(DeltaT-corr) > windowAlignment*2 && TMath::Abs(DeltaT-corr) < windowAlignment*12){
       hDeltaThetaBack->Fill((Theta1-Theta2)*TMath::RadToDeg());
       hDeltaPhiBack->Fill((Phi1-Phi2)*TMath::RadToDeg());
       hThetaRelBack->Fill(thetarel);
@@ -313,6 +426,29 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     }
   }
   
+  // compute (S+B)/S
+  for(Int_t i=1;i<=50;i++){
+    Float_t corrfactorPeak = 1;
+    if(nsigPeak-nbackPeak*0.1 > 0)
+      corrfactorPeak = hnsigpeak->GetBinContent(i)/(hnsigpeak->GetBinContent(i)-hnbackpeak->GetBinContent(i)*0.1);
+    else
+      printf("bin %i) not enough statistics\n",i);
+    hnsigpeak->SetBinContent(i,corrfactorPeak);
+  }
+
+  TF1 *fpol0 = new TF1("fpol0","pol0");
+  hnsigpeak->Fit(fpol0);
+
+  hModulation->Scale(fpol0->GetParameter(0));
+  hModulation2->Scale(fpol0->GetParameter(0));
+  hModulationAv->Scale(fpol0->GetParameter(0));
+  hModulationAvCorr->Scale(fpol0->GetParameter(0));
+  
+  TF1 *fmod = new TF1("fmod","[0] + [1]*cos((x-[2])*TMath::DegToRad())"); 
+  hModulationAv->Fit(fmod); 
+
+  printf("Estimates from time delay: Distance = %f +/- %f m -- Angle = %f +/- %f deg\n",fmod->GetParameter(1),fmod->GetParError(1),fmod->GetParameter(2),fmod->GetParError(2));
+
   h->SetStats(0);
 
   hDeltaThetaBack->Sumw2();
@@ -323,6 +459,8 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   hThetaRelBack->Scale(0.1);
   hAngleBack->Scale(0.1);
   hAngle->Add(hAngleBack,-1);
+
+  printf("bin counting: SIGNAL = %f +/- %f\n",hDeltaPhi->Integral()-hDeltaPhiBack->Integral(),sqrt(hDeltaPhi->Integral()));
 
 
   Float_t val,eval;
@@ -335,14 +473,14 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   ff->SetParName(4,"bin width");
   ff->SetParameter(0,42369);
   ff->SetParameter(1,0);
-  ff->SetParLimits(2,10,1000);
+  ff->SetParLimits(2,10,maxwidth);
   ff->SetParameter(2,350); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,(tmax-tmin)/nbint); // bin width
 
   ff->SetNpx(1000);
   
-  h->Fit(ff);
+  h->Fit(ff,"EI","",-10000,10000);
   
   val = ff->GetParameter(2);
   eval = ff->GetParError(2);
@@ -388,6 +526,15 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   hDeltaPhiBack->Write();
   hThetaRelBack->Write();
   hAngle->Write();
+  hModulation->Write();
+  hModulation2->Write();
+  hModulationAv->Write();
+  hModulationAvCorr->Write();
+  hSinTheta->Write();
+  hSinTheta2->Write();
+  hnsigpeak->Write();
+  hRunCut[0]->Write();
+  hRunCut[1]->Write();
   fo->Close();
   
 }

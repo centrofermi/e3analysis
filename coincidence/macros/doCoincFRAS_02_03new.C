@@ -9,7 +9,6 @@
 #include "TMath.h"
 #include "TTree.h"
 #include "TLegend.h"
-#include "TProfile.h"
 #include "TPaveText.h"
 
 Int_t countBits(Int_t word);
@@ -18,21 +17,16 @@ Float_t windowAlignment = 1000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 400;
+const Int_t nbint = 200;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
-const Float_t maxwidth = 700;
+const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2016,2017};
-Int_t monthRange[2] = {2,12};
-Int_t dayRange[2] = {7,31};
-
-Int_t ntrackMin[2] = {0,0};
-Int_t ntrackMax[2] = {100,100};
-Int_t ntrackTotMin = 0;
-Int_t ntrackTotMax = 100;
+Int_t yearRange[2] = {2014,2017};
+Int_t monthRange[2] = {1,12};
+Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -72,16 +66,16 @@ Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = -160.75; //deg
-Float_t distance=96;
+Float_t angle = -124.5; //deg
+Float_t distance=627;
 
-Float_t deltatCorr = 1470; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = -92; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 284-6.3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 278; // in degrees
+Float_t phi1Corr = 178; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 215; // in degrees
 
-void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
+void doCoincFRAS_02_03new(const char *fileIn="coincFRAS_0203n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -320,13 +314,6 @@ void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
     ntrack1 = t->GetLeaf("Ntracks1")->GetValue();
     ntrack2 = t->GetLeaf("Ntracks2")->GetValue();
 
-    if(ntrack1 < ntrackMin[0]) continue;
-    if(ntrack2 < ntrackMin[1]) continue;
-    if(ntrack1 > ntrackMax[0]) continue;
-    if(ntrack2 > ntrackMax[1]) continue;
-    if(ntrack1+ntrack2 > ntrackTotMax) continue;
-    if(ntrack1+ntrack2 < ntrackTotMin) continue;
-
     if(recomputeThetaRel){ // recompute ThetaRel applying corrections
       Phi1 += phi1Corr*TMath::DegToRad();
       Phi2 += phi2Corr*TMath::DegToRad();
@@ -530,7 +517,7 @@ void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputBOLO-01-04.root","RECREATE");
+  TFile *fo = new TFile("outputFRAS-02-03.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();
