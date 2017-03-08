@@ -35,7 +35,7 @@
 
 bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
-void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1,Double_t corrWindow=1E-4);
+void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1,Double_t corrWindow=1E-4,Bool_t isMC=kFALSE);
 
 int main(int argc,char *argv[]){
 
@@ -51,6 +51,8 @@ int main(int argc,char *argv[]){
   Double_t cell=0.1;
   Double_t window=1E-4;
 
+  Bool_t isMC = kFALSE;
+
   printf("list of options to overwrite the config file infos:\n");
   printf("-d DATE = to pass the date from line command\n");
   printf("-s SCHOOL_1 SCHOOL_2 = to pass the schools from line command\n");
@@ -60,6 +62,7 @@ int main(int argc,char *argv[]){
   printf("-window corr_time_window = correlation time window to define output in seconds (default = 1E-4)\n");
   printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
   printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
+  printf("-mc = for mc simulations\n");
 
   int kNoConfigFile = 0;
 
@@ -105,10 +108,10 @@ int main(int argc,char *argv[]){
       sscanf(argv[i+1],"%lf",&delay1);
       printf("Add a time delay for telescope1 of %f s\n",delay1);
       i++;  
-    }
-
+   }
+   
    if(CfrString(argv[i],"-delay2")){
-      if(i+1 > argc){
+     if(i+1 > argc){
         printf("time delay (tel2) missing\n");
         return 1;
       }
@@ -136,15 +139,19 @@ int main(int argc,char *argv[]){
       i++;  
     }
 
+   if(CfrString(argv[i],"-mc")){
+     isMC=kTRUE;
+   }
+
   }
 
-  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2,cell,window);
+  correlation_EEE(date,sc1,sc2,path,kNoConfigFile==3,delay1,delay2,cell,window,isMC);
 
   return 0;
 }
 
 
-void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t extdelay1,Double_t extdelay2,Double_t DiffCut,Double_t corrWindow)
+void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,const char *mypath,bool kNoConfigFile,Double_t extdelay1,Double_t extdelay2,Double_t DiffCut,Double_t corrWindow,Bool_t isMC)
 {
 
   Double_t delay1  =extdelay1;
@@ -344,7 +351,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           t1h->GetEvent(i);
           if(t1h->GetLeaf("nSatellites")->GetValue() > 0) kreplacedelay=kFALSE;
         }
-        if(kreplacedelay){ 
+        if(kreplacedelay && !isMC){ 
            extdelay1=17;
            delay1=17;
            printf("Delay 1 replace to 17 s\n");
@@ -355,7 +362,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           t2h->GetEvent(i);
           if(t2h->GetLeaf("nSatellites")->GetValue() > 0) kreplacedelay=kFALSE;
         }
-        if(kreplacedelay){
+        if(kreplacedelay && !isMC){
            extdelay2=17;
            delay2=17;
            printf("Delay 2 replace to 17 s\n");
@@ -624,7 +631,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		CalculateThetaPhi(XDir1[0], YDir1[0], ZDir1[0], Theta1, Phi1);
 
                 // check if hightech gps and add 17 seconds
-                if(nsat1==0 && extdelay1==0){
+                if(nsat1==0 && extdelay1==0 && !isMC){
                     //printf("school 1 hightech gps -> add 17 seconds\n");
                     delay1=17;
                 }
@@ -644,7 +651,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				if(t2->GetLeaf("GpsID")) t2g->GetEntry(t2->GetLeaf("GpsID")->GetValue());
 
                                 // check if hightech gps and add 17 seconds
-                                if(nsat2==0 && extdelay2==0){
+                                if(nsat2==0 && extdelay2==0 && !isMC){
                                     //printf("school 2 hightech gps -> add 17 seconds\n");
                                     delay2=17;
                                 }
