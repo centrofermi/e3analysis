@@ -372,6 +372,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 // Find time range
 //
 
+	printf("Find time range\n");
+
         Double_t startTime;
 
 	Double_t t1min, t1max, t2min, t2max, range1, range2;
@@ -443,6 +445,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
        hEventPerRun1->Divide(htimePerRun1);
        hEventPerRun2->Divide(htimePerRun2);
+
+
+	printf("Define cells\n");
 
 //
 // Chain mesh: define starting time cell for both trees
@@ -592,6 +597,18 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Int_t e1, e2;	
 	Double_t DiffTime;
 	Float_t ThetaRel;
+	Float_t Xcore,Ycore,Energy1,Energy2;
+	if(isMC){
+	  t1->SetBranchAddress("xCore",&Xcore);
+	  t1->SetBranchAddress("yCore",&Ycore);
+	  t1->SetBranchAddress("Energy",&Energy1);
+	  t2->SetBranchAddress("Energy",&Energy2);
+
+	  treeout->Branch("xCore", &Xcore, "xCore/F");
+	  treeout->Branch("yCore", &Ycore, "yCore/F");
+	  treeout->Branch("Energy1", &Energy1, "Energy1/F");
+	  treeout->Branch("Energy2", &Energy2, "Energy2/F");
+	}
         treeout->Branch("year", &year, "year/I");
         treeout->Branch("month", &month, "month/I");
         treeout->Branch("day", &day, "day/I");
