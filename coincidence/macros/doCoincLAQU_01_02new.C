@@ -17,15 +17,15 @@ Float_t windowAlignment = 1000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 400;
+const Int_t nbint = 200;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2014,2017};
-Int_t monthRange[2] = {1,12};
+Int_t yearRange[2] = {2015,2016};
+Int_t monthRange[2] = {1,7};
 Int_t dayRange[2] = {1,31};
 
 Int_t ntrackMin[2] = {0,0};
@@ -53,7 +53,7 @@ Int_t ndeadTopMin[2] = {0,0};
 
 // requirement on the number of satellites in the run (average)
 Float_t minAvSat[2] = {4.,4.};
-Float_t maxAvSat[2] = {4,7};
+Float_t maxAvSat[2] = {7,7};
 
 // time difference between weather info and the start of the run (it is negative!) allowed (in seconds)
 Int_t minWeathTimeDelay[2] = {-999999,-999999};

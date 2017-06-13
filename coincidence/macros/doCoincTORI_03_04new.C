@@ -18,16 +18,16 @@ Float_t windowAlignment2 = 10000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 50;
+const Int_t nbint = 100;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2014,2016};
-Int_t monthRange[2] = {11,1};
-Int_t dayRange[2] = {1,15};
+Int_t yearRange[2] = {2014,2017};
+Int_t monthRange[2] = {11,12};
+Int_t dayRange[2] = {1,1};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -62,7 +62,7 @@ Float_t refRate[2] = {23,23};
 // thresholds for good events
 Float_t maxchisquare = 10*10/2;
 Float_t minthetarel = 0;
-Float_t maxthetarel = 30;
+Float_t maxthetarel = 60;
 Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
