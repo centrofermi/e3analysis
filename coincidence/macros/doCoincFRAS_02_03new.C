@@ -24,8 +24,8 @@ const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2014,2017};
-Int_t monthRange[2] = {1,12};
+Int_t yearRange[2] = {2015,2016};
+Int_t monthRange[2] = {11,6};
 Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
