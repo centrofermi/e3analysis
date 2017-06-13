@@ -25,9 +25,9 @@ const Float_t maxwidth = 700;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2015,2017};
-Int_t monthRange[2] = {11,3};
-Int_t dayRange[2] = {1,31};
+Int_t yearRange[2] = {2016,2017};
+Int_t monthRange[2] = {11,2};
+Int_t dayRange[2] = {1,15};
 
 Int_t ntrackMin[2] = {0,0};
 Int_t ntrackMax[2] = {100,100};
