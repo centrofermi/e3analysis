@@ -3,7 +3,8 @@ plotRateDistanceOld(){
 
   // Corsika MC (eff tel = 80%)
   const Int_t nMC = 10;
-  Float_t teleff = 0.8;
+  Float_t mrpceff = 0.95;
+  Float_t teleff = mrpceff*mrpceff*mrpceff;
   Float_t distMC[nMC] = {200,400,600,800,1000,1200,1400,1600,1800,2000};
   Float_t rateMC[nMC] = {143.767120, 63.287670, 39.794521, 23.150684, 13.356164, 6.917808, 5.753425, 2.739726, 1.849315, 1.849315};
   Float_t edistMC[nMC];
@@ -64,11 +65,12 @@ plotRateDistanceOld(){
   gMC->Draw("L");
 
   TLegend *leg = new TLegend(0.3,0.59,0.94,0.89);
+  leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetHeader(Form("#Chi^{2}/(n.d.f.) = %.2f",f->GetChisquare()/f->GetNDF()));
   leg->AddEntry(g,"Data Run-1/Run-2","LP");
   leg->AddEntry(f,Form("fit: (%.0f #pm %.0f) x^{%.2f #pm %.2f}",Int_t(f->GetParameter(0)*0.001+0.5)*1000.,Int_t(f->GetParError(0)*0.001+0.5)*1000.,f->GetParameter(1)+0.005,f->GetParError(1)+0.005),"L");
-  leg->AddEntry(gMC,"Corsika: 10^{5}<E<10^{7} GeV, #varepsilon_{telescope}=0.8","L");
+  leg->AddEntry(gMC,Form("Corsika: 10^{5}<E<10^{7} GeV, #varepsilon_{MRPC}=%.2f",mrpceff),"L");
   leg->Draw("SAME");
 
 }
@@ -104,7 +106,7 @@ void DrawLogo(Float_t x = 0.75,Float_t y = 0.99,Int_t Pilot=1){
   sub->SetTextAlign(13);
   sub->Draw();
 
-  TLatex *pre = new TLatex(x-0.0005,y-0.11,"preliminary");
+  TLatex *pre = new TLatex(x,y-0.1,"preliminary");
   pre->SetTextSize(0.05*1.2);
   pre->SetTextFont(42);
   pre->SetTextColor(kBlue);
