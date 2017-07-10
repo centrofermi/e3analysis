@@ -1,5 +1,23 @@
 plotRateDistance(){
-  const Float_t omegaIv = 1./2/TMath::Pi();
+  const Float_t omegaInv = 1./2/TMath::Pi();
+
+  // Corsika MC (eff tel = 80%)
+  const Int_t nMC = 10;
+  Float_t teleff = 0.8;
+  Float_t distMC[nMC] = {200,400,600,800,1000,1200,1400,1600,1800,2000};
+  Float_t rateMC[nMC] = {143.767120, 63.287670, 39.794521, 23.150684, 13.356164, 6.917808, 5.753425, 2.739726, 1.849315, 1.849315};
+  Float_t edistMC[nMC];
+  Float_t erateMC[nMC] = {3.138003, 2.082011, 1.650955, 1.259231, 0.956455, 0.688348, 0.627750, 0.433189, 0.355901, 0.355901};
+
+  for(Int_t i=0;i < nMC;i++){
+    edistMC[i] = 0;
+    rateMC[i] *= omegaInv*teleff*teleff;
+    erateMC[i] *= omegaInv*teleff*teleff;
+  }
+  TGraphErrors *gMC = new TGraphErrors(10,distMC,rateMC,edistMC,erateMC);
+  gMC->SetLineColor(2);
+  gMC->SetLineWidth(2);
+
 
   const Int_t n = 8;
   Float_t dist[n] = {15,96,204,418,520,627,1075,1182};
@@ -12,14 +30,14 @@ plotRateDistance(){
   Float_t flux[n],errflux[n];
 
   for(Int_t i=0;i < n;i++){
-    flux[i] = rates[i]/accept[i]*omegaIv;
-    errflux[i] = errrates[i]/accept[i]*omegaIv;
+    flux[i] = rates[i]/accept[i]*omegaInv;
+    errflux[i] = errrates[i]/accept[i]*omegaInv;
     errflux[i] = TMath::Sqrt(errflux[i]*errflux[i] + flux[i]*flux[i]*0.1*0.1);
     errdist[i] = dist[i]*0.01;
     errdist[i] = TMath::Sqrt(errdist[i]*errdist[i] + 5*5);
   }
 
-  TH1D *h = new TH1D("h","",650,0,1300);
+  TH1D *h = new TH1D("h","",1000,0,2000);
   SetHisto(h);
 
   TGraphErrors *g = new TGraphErrors(n,dist,flux,errdist,errflux);
@@ -34,7 +52,7 @@ plotRateDistance(){
 
   h->SetTitle("Rates not corrected for efficiency;distance (m);rate (m^{4} sr day)^{-1}");
   h->SetMaximum(1000);
-  h->SetMinimum(0.5);
+  h->SetMinimum(0.1);
 
   DrawLogo();
 
@@ -43,14 +61,15 @@ plotRateDistance(){
   f->SetParameter(0,1000);
   f->SetParameter(1,-1.4);
   g->Fit(f);
+  ((TF1 *) g->GetListOfFunctions()->At(0))->SetRange(0,2000);
+  gMC->Draw("L");
 
-  //  f->Draw("SAME");
-
-  TLegend *leg = new TLegend(0.3,0.5,0.94,0.8);
+  TLegend *leg = new TLegend(0.3,0.59,0.94,0.89);
   leg->SetHeader(Form("#Chi^{2}/(n.d.f.) = %.2f",f->GetChisquare()/f->GetNDF()));
   leg->SetFillStyle(0);
   leg->AddEntry(g,"Data Run-3","LP");
   leg->AddEntry(f,Form("fit: (%.0f #pm %.0f) x^{%.2f #pm %.2f}",Int_t(f->GetParameter(0)*0.001+0.5)*1000.,Int_t(f->GetParError(0)*0.001+0.5)*1000.,f->GetParameter(1)+0.005,f->GetParError(1)+0.005),"L");
+  leg->AddEntry(gMC,"Corsika: 10^{5}<E<10^{7} GeV, #varepsilon_{telescope}=0.8","L");
   leg->Draw("SAME");
 
 
@@ -87,7 +106,7 @@ void DrawLogo(Float_t x = 0.75,Float_t y = 0.99,Int_t Pilot=1){
   sub->SetTextAlign(13);
   sub->Draw();
 
-  TLatex *pre = new TLatex(x,y-0.1,"preliminary");
+  TLatex *pre = new TLatex(x-0.0005,y-0.11,"preliminary");
   pre->SetTextSize(0.05*1.2);
   pre->SetTextFont(42);
   pre->SetTextColor(kBlue);
