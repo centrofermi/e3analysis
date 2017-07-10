@@ -56,7 +56,7 @@ plotRateDistanceOld(){
 
   DrawLogo();
 
-  TF1 *f = new TF1("f","[0]*TMath::Power(x,[1])",0,3000);
+  TF1 *f = new TF1("f","[0]*TMath::Power(x*0.001,[1])",0,3000);
   f->SetLineColor(4);
   f->SetParameter(0,1000);
   f->SetParameter(1,-1.4);
@@ -69,7 +69,7 @@ plotRateDistanceOld(){
   leg->SetFillStyle(0);
   leg->SetHeader(Form("#Chi^{2}/(n.d.f.) = %.2f",f->GetChisquare()/f->GetNDF()));
   leg->AddEntry(g,"Data Run-1/Run-2","LP");
-  leg->AddEntry(f,Form("fit: (%.0f #pm %.0f) x^{%.2f #pm %.2f}",Int_t(f->GetParameter(0)*0.001+0.5)*1000.,Int_t(f->GetParError(0)*0.001+0.5)*1000.,f->GetParameter(1)+0.005,f->GetParError(1)+0.005),"L");
+  leg->AddEntry(f,Form("fit: (%.1f #pm %.1f) (x/km)^{%.2f #pm %.2f}",f->GetParameter(0)+0.005,f->GetParError(0)+0.005,f->GetParameter(1)+0.005,f->GetParError(1)+0.005),"L");
   leg->AddEntry(gMC,Form("Corsika: 10^{5}<E<10^{7} GeV, #varepsilon_{MRPC}=%.2f",mrpceff),"L");
   leg->Draw("SAME");
 
