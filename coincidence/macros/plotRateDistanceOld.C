@@ -32,7 +32,7 @@ plotRateDistanceOld(){
   for(Int_t i=0;i < n;i++){
     flux[i] = rates[i]/accept[i]*omegaInv;
     errflux[i] = errrates[i]/accept[i]*omegaInv;
-    errflux[i] = TMath::Sqrt(errflux[i]*errflux[i] + flux[i]*flux[i]*0.1*0.1);
+    errflux[i] = TMath::Sqrt(errflux[i]*errflux[i] + flux[i]*flux[i]*0.2*0.2);
     errdist[i] = dist[i]*0.01;
     errdist[i] = TMath::Sqrt(errdist[i]*errdist[i] + 5*5);
   }
