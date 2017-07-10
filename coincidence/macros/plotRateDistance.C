@@ -23,16 +23,40 @@ plotRateDistance(){
   const Int_t n = 8;
   Float_t dist[n] = {15,96,167,204,520,627,1075,1182};
   Float_t errdist[n];
-  Float_t rates[n] = {2900,143.6,135,80.5,18.4,22,7.5,6.2};
-  Float_t errrates[n] = {10,2.6,2.1,3,1.9,2,1.3,1.1};
+  Float_t rates[n] = {3079,144.6,135,80.5,18.9,22,7.9,6.2};
+  Float_t errrates[n] = {6.3,2.6,2.1,3,2.5,2,1.3,1.1};
+
+  Float_t deadchB[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchM[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchT[n] = {0,,0,0,0,0,0,0};
+  Float_t deadchB2[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchM2[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchT2[n] = {0,0,0,0,0,0,0,0};
+
+  // set dead channels
+  deadchM[0] = 0.113619;//CERN-01
+  deadchB[1] = 0.159721;//BOLO-01
+  deadchT[1] = 1;//BOLO-01
+  deadchB[2] = 1.034829;//LODI-01
+  deadchM[2] = 1;//LODI-01
+  deadchT2[2] = 0.270297;//LODI-02
+  deadchM[4] = 1;//CAGL-01
+  deadchB[5] = 0.070158;//FRAS-02
+  deadchT[5] = 1.051945;//FRAS-02
+  deadchT2[5] = 0.498318;//FRAS-03
+  deadchB2[6] = 0.018869;//TORI-04
+  deadchM2[6] = 0.533232;//TORI-04
+  deadchB[7] = 0.603576;//SAVO-01
+  deadchT[7] = 0.961602;//SAVO-01
+  // --------------------
 
   Float_t accept[n] = {0.88,0.73,0.73,0.73,0.73,1.02,0.73,0.86};
 
   Float_t flux[n],errflux[n];
 
   for(Int_t i=0;i < n;i++){
-    flux[i] = rates[i]/accept[i]*omegaInv;
-    errflux[i] = errrates[i]/accept[i]*omegaInv;
+    flux[i] = rates[i]/accept[i]*omegaInv/(1-deadchB[i]/24)/(1-deadchM[i]/24)/(1-deadchT[i]/24)/(1-deadchB2[i]/24)/(1-deadchM2[i]/24)/(1-deadchT2[i]/24);
+    errflux[i] = errrates[i]/accept[i]*omegaInv/(1-deadchB[i]/24)/(1-deadchM[i]/24)/(1-deadchT[i]/24)/(1-deadchB2[i]/24)/(1-deadchM2[i]/24)/(1-deadchT2[i]/24);
     errflux[i] = TMath::Sqrt(errflux[i]*errflux[i] + flux[i]*flux[i]*0.2*0.2);
     errdist[i] = dist[i]*0.01;
     errdist[i] = TMath::Sqrt(errdist[i]*errdist[i] + 5*5);
