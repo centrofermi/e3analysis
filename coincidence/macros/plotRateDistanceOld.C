@@ -1,6 +1,4 @@
 plotRateDistanceOld(){
-  const Float_t omegaInv = 1./2/TMath::Pi();
-
   // Corsika MC (eff tel = 80%)
   const Int_t nMC = 10;
   Float_t mrpceff = 0.95;
@@ -12,8 +10,8 @@ plotRateDistanceOld(){
 
   for(Int_t i=0;i < nMC;i++){
     edistMC[i] = 0;
-    rateMC[i] *= omegaInv*teleff*teleff;
-    erateMC[i] *= omegaInv*teleff*teleff;
+    rateMC[i] *= teleff*teleff;
+    erateMC[i] *= teleff*teleff;
   }
   TGraphErrors *gMC = new TGraphErrors(10,distMC,rateMC,edistMC,erateMC);
   gMC->SetLineColor(2);
@@ -30,8 +28,8 @@ plotRateDistanceOld(){
   Float_t flux[n],errflux[n];
 
   for(Int_t i=0;i < n;i++){
-    flux[i] = rates[i]/accept[i]*omegaInv;
-    errflux[i] = errrates[i]/accept[i]*omegaInv;
+    flux[i] = rates[i]/accept[i];
+    errflux[i] = errrates[i]/accept[i];
     errflux[i] = TMath::Sqrt(errflux[i]*errflux[i] + flux[i]*flux[i]*0.2*0.2);
     errdist[i] = dist[i]*0.01;
     errdist[i] = TMath::Sqrt(errdist[i]*errdist[i] + 5*5);
@@ -51,8 +49,8 @@ plotRateDistanceOld(){
   g->SetMarkerStyle(20);
 
   h->SetTitle("Rates not corrected for efficiency;distance (m);rate (m^{4} sr day)^{-1}");
-  h->SetMaximum(1000);
-  h->SetMinimum(0.1);
+  h->SetMaximum(5000);
+  h->SetMinimum(1);
 
   DrawLogo();
 

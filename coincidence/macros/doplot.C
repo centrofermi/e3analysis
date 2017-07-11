@@ -1,6 +1,4 @@
 doplot(){
-  const Float_t omegaIv = 1./2/TMath::Pi();
-
   const Int_t n = 9;
   Float_t dist[n] = {15,96,167,204,418,520,627,1075,1182};
   Float_t errdist[n];
@@ -12,8 +10,8 @@ doplot(){
   Float_t flux[n],errflux[n];
 
   for(Int_t i=0;i < n;i++){
-    flux[i] = rates[i]/accept[i]*omegaIv;
-    errflux[i] = errrates[i]/accept[i]*omegaIv;
+    flux[i] = rates[i]/accept[i];
+    errflux[i] = errrates[i]/accept[i];
     errflux[i] = TMath::Sqrt(errflux[i]*errflux[i]);// + flux[i]*flux[i]*0.2*0.2);
     errdist[i] = dist[i]*0.01;
     errdist[i] = TMath::Sqrt(errdist[i]*errdist[i] + 5*5);
@@ -39,8 +37,8 @@ doplot(){
   g->SetMarkerStyle(20);
 
   h->SetTitle("Rates not corrected for efficiency;distance (m);rate (m^{4} sr day)^{-1}");
-  h->SetMaximum(1000);
-  h->SetMinimum(0.5);
+  h->SetMaximum(5000);
+  h->SetMinimum(5);
 
   const Int_t nOld = 8;
   Float_t x[] = {15,96,204,418,520,627, 1075,1182};
@@ -53,8 +51,8 @@ doplot(){
   Float_t acc[] = {0.88,0.62,0.73,0.63,0.43,1.02,0.73,0.86};
 
   for(Int_t i=0;i<nOld;i++){
-    y[i] /= acc[i]/omegaIv;
-    ey[i] /= acc[i]/omegaIv;
+    y[i] /= acc[i];
+    ey[i] /= acc[i];
     ey[i] = sqrt(ey[i]*ey[i]);// + y[i]*y[i]*0.2*0.2);
 
     Int_t j = i;
