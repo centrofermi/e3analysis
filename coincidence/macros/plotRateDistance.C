@@ -21,8 +21,8 @@ plotRateDistance(){
   const Int_t n = 8;
   Float_t dist[n] = {15,96,167,204,520,627,1075,1182};
   Float_t errdist[n];
-  Float_t rates[n] = {3079,144.6,135,80.5,18.9,22,7.9,6.2};
-  Float_t errrates[n] = {6.3,2.6,2.1,3,2.5,2,1.3,1.1};
+  Float_t rates[n] = {3079,160,135,80.5,17.7,22,7.9,6.2};
+  Float_t errrates[n] = {6.3,3.7,2.1,3,2.6,2,1.3,1.1};
 
   Float_t deadchB[n] = {0,0,0,0,0,0,0,0};
   Float_t deadchM[n] = {0,0,0,0,0,0,0,0};
@@ -33,7 +33,7 @@ plotRateDistance(){
 
   // set dead channels
   deadchM[0] = 0.113619;//CERN-01
-  deadchB[1] = 0.159721;//BOLO-01
+  deadchB[1] = 0.125481;//BOLO-01
   deadchT[1] = 1;//BOLO-01
   deadchB[2] = 1.034829;//LODI-01
   deadchM[2] = 1;//LODI-01
@@ -77,7 +77,7 @@ plotRateDistance(){
   h->SetMaximum(5000);
   h->SetMinimum(1);
 
-  DrawLogo();
+  //DrawLogo();
 
   TF1 *f = new TF1("f","[0]*TMath::Power(x*0.001,[1])",0,3000);
   f->SetLineColor(4);

@@ -1,11 +1,11 @@
 doplot(){
-  const Int_t n = 9;
-  Float_t dist[n] = {15,96,167,204,418,520,627,1075,1182};
+  const Int_t n = 8;
+  Float_t dist[n] = {15,96,204,418,520,627,1075,1182};
   Float_t errdist[n];
-  Float_t rates[n] = {3079,144.6,135,80.5,15.5,18.9,22,7.9,6.2};
-  Float_t errrates[n] = {6.3,2.6,2.1,3,2.5,1.9,2,1.3,1.1};
+  Float_t rates[n] = {2131,133,80.5,23.9,13.2,17.6,7,5.2};
+  Float_t errrates[n] = {6,2.5,1.3,3.7,0.6,1.6,1.2,0.6};
 
-  Float_t accept[n] = {0.88,0.73,0.73,0.73,0.73,0.73,1.02,0.73,0.86};
+  Float_t accept[n] = {0.88,0.62,0.73,0.68,0.43,1.02,0.73,0.86};
 
   Float_t flux[n],errflux[n];
 
@@ -48,7 +48,7 @@ doplot(){
 
   Float_t ratio[nOld],erratio[nOld];
 
-  Float_t acc[] = {0.88,0.62,0.73,0.63,0.43,1.02,0.73,0.86};
+  Float_t acc[] = {0.88,0.62,0.73,0.68,0.43,1.02,0.73,0.86};
 
   for(Int_t i=0;i<nOld;i++){
     y[i] /= acc[i];
@@ -56,7 +56,6 @@ doplot(){
     ey[i] = sqrt(ey[i]*ey[i]);// + y[i]*y[i]*0.2*0.2);
 
     Int_t j = i;
-    if(i > 1) j++;
 
     ratio[i] = flux[j]/y[i];
     erratio[i] = sqrt(errflux[j]*errflux[j]/flux[j]/flux[j] + ey[i]*ey[i]/y[i]/y[i]);
@@ -72,8 +71,8 @@ doplot(){
 
   TLegend *leg = new TLegend(0.6,0.5,0.9,0.8);
   leg->SetFillStyle(0);
-  leg->AddEntry(g,"after Run-3","LP");
-  leg->AddEntry(g2,"before Run-3","LP");
+  leg->AddEntry(g,"Run-2 new analyzer","LP");
+  leg->AddEntry(g2,"Run-2 old analyzer","LP");
   leg->Draw("SAME");
   
   //  DrawLogo();

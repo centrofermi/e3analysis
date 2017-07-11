@@ -1,4 +1,4 @@
-plotRateDistance(){
+plotRateDistanceAll(){
   // Corsika MC (eff tel = 80%)
   const Int_t nMC = 10;
   Float_t mrpceff = 0.95;

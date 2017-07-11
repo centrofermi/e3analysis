@@ -20,10 +20,26 @@ plotRateDistanceOld(){
   const Int_t n = 8;
   Float_t dist[n] = {15,96,204,418,520,627,1075,1182};
   Float_t errdist[n];
-  Float_t rates[n] = {2131,120.5,58.8,20,11.8,17.6,7,5.2};
-  Float_t errrates[n] = {6,1.3,1.2,3.7,0.6,1.6,1.2,0.6};
+  Float_t rates[n] = {2131,133.5,58.8,20,13.2,17.6,7,5.2};
+  Float_t errrates[n] = {6,2.5,1.2,3.7,0.6,1.6,1.2,0.6};
 
-  Float_t accept[n] = {0.88,0.62,0.73,0.63,0.43,1.02,0.73,0.86};
+  Float_t deadchB[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchM[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchT[n] = {0,,0,0,0,0,0,0};
+  Float_t deadchB2[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchM2[n] = {0,0,0,0,0,0,0,0};
+  Float_t deadchT2[n] = {0,0,0,0,0,0,0,0};
+
+  // set dead channels
+  deadchB[1] = 0.855914;//BOLO-01
+  deadchT[1] = 1;//BOLO-01
+  deadchT[3] = 1;//GROS-01
+  deadchB[2] = 0.263500;//CAGL-01
+  deadchM[2] = 0.537889;//CAGL-01
+  deadchB2[2] = 0.001428;//CAGL-02
+  // --------------------
+
+  Float_t accept[n] = {0.88,0.62,0.73,0.68,0.43,1.02,0.73,0.86};
 
   Float_t flux[n],errflux[n];
 
@@ -52,7 +68,7 @@ plotRateDistanceOld(){
   h->SetMaximum(5000);
   h->SetMinimum(1);
 
-  DrawLogo();
+  //  DrawLogo();
 
   TF1 *f = new TF1("f","[0]*TMath::Power(x*0.001,[1])",0,3000);
   f->SetLineColor(4);

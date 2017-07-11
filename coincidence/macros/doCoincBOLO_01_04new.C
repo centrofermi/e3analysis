@@ -14,7 +14,7 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 1000; // in ns (cut signal and background)
+Float_t windowAlignment = 2000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
@@ -27,7 +27,11 @@ const Float_t maxwidth = 700;
 // periods
 Int_t yearRange[2] = {2016,2017};
 Int_t monthRange[2] = {11,2};
-Int_t dayRange[2] = {1,15};
+Int_t dayRange[2] = {8,7};
+
+// Int_t yearRange[2] = {2016,2016};
+// Int_t monthRange[2] = {2,6};
+// Int_t dayRange[2] = {14,19};
 
 Int_t ntrackMin[2] = {0,0};
 Int_t ntrackMax[2] = {100,100};
@@ -158,6 +162,8 @@ void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
   Int_t nStripDeadMid[2][nyearmax][12][31][500];
   Int_t nStripDeadTop[2][nyearmax][12][31][500];
 
+  Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
+
   // sat info
   Float_t NsatAv[2][nyearmax][12][31][500];
 
@@ -261,7 +267,24 @@ void doCoincBOLO_01_04new(const char *fileIn="coincBOLO_0104n.root"){
       if(!runstatus[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run2")->GetValue())]) continue;
       
       nsecGR += telC->GetLeaf("timeduration")->GetValue(); 
+      nstripDeadB[0] += countBits(nStripDeadBot[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
+      nstripDeadM[0] += countBits(nStripDeadMid[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
+      nstripDeadT[0] += countBits(nStripDeadTop[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
+
+      nstripDeadB[1] += countBits(nStripDeadBot[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
+      nstripDeadM[1] += countBits(nStripDeadMid[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
+      nstripDeadT[1] += countBits(nStripDeadTop[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
     }
+    nstripDeadB[0] /= nsecGR;
+    nstripDeadM[0] /= nsecGR;
+    nstripDeadT[0] /= nsecGR;
+
+    nstripDeadB[1] /= nsecGR;
+    nstripDeadM[1] /= nsecGR;
+    nstripDeadT[1] /= nsecGR;
+
+    printf("Dead channel tel1 = %f - %f - %f\n",nstripDeadB[0],nstripDeadM[0],nstripDeadT[0]);
+    printf("Dead channel tel2 = %f - %f - %f\n",nstripDeadB[1],nstripDeadM[1],nstripDeadT[1]);
   }
   
   char title[300];

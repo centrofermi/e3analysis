@@ -24,9 +24,13 @@ const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2016,2017};
-Int_t monthRange[2] = {11,6};
-Int_t dayRange[2] = {1,31};
+Int_t yearRange[2] = {2017,2017};
+Int_t monthRange[2] = {2,6};
+Int_t dayRange[2] = {1,30};
+
+// Int_t yearRange[2] = {2014,2016};
+// Int_t monthRange[2] = {10,6};
+// Int_t dayRange[2] = {1,30};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -45,8 +49,6 @@ Int_t ndeadMidMax[2] = {23,23};
 Int_t ndeadMidMin[2] = {0,0};
 Int_t ndeadTopMax[2] = {23,23};
 Int_t ndeadTopMin[2] = {0,0};
-
-Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
 
 // requirement on the number of satellites in the run (average)
 Float_t minAvSat[2] = {4.,4.};
@@ -153,6 +155,8 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   Int_t nStripDeadBot[2][nyearmax][12][31][500];
   Int_t nStripDeadMid[2][nyearmax][12][31][500];
   Int_t nStripDeadTop[2][nyearmax][12][31][500];
+
+  Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
 
   // sat info
   Float_t NsatAv[2][nyearmax][12][31][500];
