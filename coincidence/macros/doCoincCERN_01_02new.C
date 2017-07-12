@@ -24,14 +24,18 @@ const Float_t maxwidth = 200;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2015,2015};
+Int_t yearRange[2] = {2017,2017};
 Int_t monthRange[2] = {1,6};
 Int_t dayRange[2] = {1,30};
 
+// Int_t yearRange[2] = {2016,2016};
+// Int_t monthRange[2] = {10,10};
+// Int_t dayRange[2] = {26,27};
+
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
-Float_t fracGT[2] = {0.8,0.3};
-Float_t rateMin[2] = {10,10};
+Float_t fracGT[2] = {0.9,0.6};
+Float_t rateMin[2] = {30,30};
 Float_t rateMax[2] = {70,70};
 
 // old cut on the missing rate (replaced by the number of dead strips)
@@ -221,8 +225,7 @@ void doCoincCERN_01_02new(const char *fileIn="coincCERN_0102n.root"){
 	if(tel[i]->GetLeaf("OutdoorTemperature")) TempOutTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("OutdoorTemperature")->GetValue();
 	if(tel[i]->GetLeaf("TimeWeatherUpdate")) timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("TimeWeatherUpdate")->GetValue();
 
-	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]){
-	  hRunCut[i]->Fill("NoGoodWeather",1); continue;}
+	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]){ hRunCut[i]->Fill("NoGoodWeather",1); continue;	}
 
 	// Set good runs
 	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
@@ -235,7 +238,6 @@ void doCoincCERN_01_02new(const char *fileIn="coincCERN_0102n.root"){
   }
   printf("Start to process correlations\n");
   Int_t n = t->GetEntries();
-
   // counter for seconds
   Int_t nsec = 0;
   Int_t nsecGR = 0; // for good runs

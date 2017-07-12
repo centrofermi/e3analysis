@@ -17,25 +17,25 @@ const Float_t tmin = -1000; //ns
 const Float_t tmax = 1000; //ns
 
 // periods
-Int_t yearRange[2] = {2014,2015};
-Int_t monthRange[2] = {1,07};
-Int_t dayRange[2] = {1,31};
+Int_t yearRange[2] = {2016,2016};
+Int_t monthRange[2] = {10,10};
+Int_t dayRange[2] = {26,27};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
-Float_t fracGT[2] = {0.9,0.9};
+Float_t fracGT[2] = {0.9,0.8};
 Float_t rateMin[2] = {30,30};
-Float_t rateMax[2] = {70,70};
+Float_t rateMax[2] = {80,80};
 Float_t minmissingHitFrac[2] = {-1,-1};
 Float_t maxmissingHitFrac[2] = {1,1};
 
 // thresholds for good events
-Float_t maxchisquare = 10;
+Float_t maxchisquare = 20;
 Float_t maxthetarel = 60;
 
 // telescope settings
 Float_t angle = -134.7993;//deg
-Float_t distance=30;
+Float_t distance=15;
 
 Float_t deltatCorr = -260; // knows shift in gps time difference for a given pair of telescopes (bolo 2000)
 // extra corrections
@@ -43,7 +43,7 @@ Bool_t recomputeThetaRel = kFALSE; // if true correction below are applied to ad
 Float_t phi1Corr = 0; // in degrees
 Float_t phi2Corr = 0; // in degrees (bolo -28)
 
-void doCoincCERN_01_02(const char *fileIn="coincCERN_0102.root"){
+void doCoincCERN_01_02(const char *fileIn="coincCERN_0102o.root"){
   Int_t adayMin = (yearRange[0]-2007) * 1000 + monthRange[0]*50 + dayRange[0];
   Int_t adayMax = (yearRange[1]-2007) * 1000 + monthRange[1]*50 + dayRange[1];
 

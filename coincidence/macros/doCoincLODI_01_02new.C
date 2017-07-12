@@ -59,7 +59,7 @@ Float_t refRate[2] = {23,23};
 
 // (3)
 // thresholds for good events
-Float_t maxchisquare = 10*10/2;
+Float_t maxchisquare = 10*10/2*2*2*2*2;
 Float_t minthetarel = 0;
 Float_t maxthetarel = 60;
 Int_t satEventThr = 0; // minimum number of sattellite required in each event

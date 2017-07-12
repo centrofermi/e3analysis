@@ -20,8 +20,8 @@ plotRateDistanceOld(){
   const Int_t n = 8;
   Float_t dist[n] = {15,96,204,418,520,627,1075,1182};
   Float_t errdist[n];
-  Float_t rates[n] = {2131,133.5,58.8,20,13.2,17.6,7,5.2};
-  Float_t errrates[n] = {6,2.5,1.2,3.7,0.6,1.6,1.2,0.6};
+  Float_t rates[n] = {3904,133.5,58.8,20,13.2,17.6,7,5.2};
+  Float_t errrates[n] = {54,2.5,1.2,3.7,0.6,1.6,1.2,0.6};
 
   Float_t deadchB[n] = {0,0,0,0,0,0,0,0};
   Float_t deadchM[n] = {0,0,0,0,0,0,0,0};
