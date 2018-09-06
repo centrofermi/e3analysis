@@ -6,7 +6,7 @@ to load the environment variables at CNAF
 > source myset.tcsh
 > source env.sh
 
-script.py
+1) script.py
 python script to downlaod hisparc data and to format then for correlation with EEE data.
 So far it is tuned only for one cluster of hisparc stations
 Run it with:
@@ -60,3 +60,47 @@ A short tutorial can be found here: https://docs.hisparc.nl/sapphire/tutorial.ht
 Our notebooks can be found here: https://docs.hisparc.nl/infopakket/ (mostly Dutch)
 
 We use the HDF5 file format for our data, personally I like the HDFView program to quickly inspect the files: https://support.hdfgroup.org/products/java/hdfview/
+
+2) To produce an output to be processed with our LD correlation code run mkday.C macro
+> root mkday.C\(\"2016-11-01\"\)
+This allows to apply some reconstruction steps, the output is
+root [0] 
+Attaching file HS-0500-2016-11-01.root as _file0...
+(TFile *) 0x2546b30
+root [1] _file0->ls()
+TFile**		HS-0500-2016-11-01.root	
+ TFile*		HS-0500-2016-11-01.root	
+  KEY: TTree	cosmics;1	cosmics
+root [2] cosmics->Print()
+******************************************************************************
+*Tree    :cosmics   : cosmics                                                *
+*Entries :     2715 : Total =           79734 bytes  File  Size =      21914 *
+*        :          : Tree compression factor =   3.61                       *
+******************************************************************************
+*Br    0 :Seconds   : Seconds/I                                              *
+*Entries :     2715 : Total  Size=      11419 bytes  File Size  =       5693 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.92     *
+*............................................................................*
+*Br    1 :Nanoseconds : Nanoseconds/L                                        *
+*Entries :     2715 : Total  Size=      22307 bytes  File Size  =      13659 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.60     *
+*............................................................................*
+*Br    2 :Ntracks   : Ntracks/I                                              * -> Here it means the number of stations
+*Entries :     2715 : Total  Size=      11419 bytes  File Size  =       1393 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   7.85     *
+*............................................................................*
+*Br    3 :XDir      : XDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+*Br    4 :YDir      : YDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+*Br    5 :ZDir      : ZDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+
+
+
