@@ -52,3 +52,11 @@ root [2] t1->Print()
 *Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.24     *
 *............................................................................*
 
+Requirements
+Somewhat late but here some information about HiSPARC. To install the software simply use: "pip install hisparc-sapphire"
+
+A short tutorial can be found here: https://docs.hisparc.nl/sapphire/tutorial.html More information including the SAPPHiRE Reference here: https://docs.hisparc.nl/sapphire/
+
+Our notebooks can be found here: https://docs.hisparc.nl/infopakket/ (mostly Dutch)
+
+We use the HDF5 file format for our data, personally I like the HDFView program to quickly inspect the files: https://support.hdfgroup.org/products/java/hdfview/
