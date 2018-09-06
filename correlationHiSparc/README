@@ -9,6 +9,8 @@ to load the environment variables at CNAF
 1) script.py
 python script to downlaod hisparc data and to format then for correlation with EEE data.
 So far it is tuned only for one cluster of hisparc stations
+STATIONS = [501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 521, 522]
+
 Run it with:
 > python script.py YEAR MONTH DAY
 It collects HISPARC data, selects events with at least 3 station in coincidences and writes a ROOT tree
