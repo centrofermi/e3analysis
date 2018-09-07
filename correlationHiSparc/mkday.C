@@ -68,7 +68,7 @@ void mkday(const char *date){
    Float_t vx=0,vy=0,vz=0,tof;
    Int_t ind;
 
-   Flaot_t xdirt[100],ydir[100],zdir[100],chi2[100];
+   Float_t xdirt[100],ydirt[100],zdirt[100],chi2[100];
 
    t->SetBranchAddress("Seconds",&sec);
    t->SetBranchAddress("NanoSeconds",&ns);
@@ -87,7 +87,7 @@ void mkday(const char *date){
    tout->Branch("ZDirTrack",zdirt,"ZDirTrack[Ntracks]/F");
    tout->Branch("ChiSquareTrack",chi2,"ChiSquareTrack[Ntracks]/F");
    Float_t sumscalprod=0;
-   tour->Branch("SumScalarProducts",&sumscalprod,"SumScalarProducts/F");
+   tout->Branch("SumScalarProducts",&sumscalprod,"SumScalarProducts/F");
 
 
    Float_t sx,sy,st,st2,sxt,syt,dx,dy,delta;
