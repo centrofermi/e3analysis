@@ -86,6 +86,8 @@ void mkday(const char *date){
    tout->Branch("YDirTrack",ydirt,"YDirTrack[Ntracks]/F");
    tout->Branch("ZDirTrack",zdirt,"ZDirTrack[Ntracks]/F");
    tout->Branch("ChiSquareTrack",chi2,"ChiSquareTrack[Ntracks]/F");
+   Float_t sumscalprod=0;
+   tour->Branch("SumScalarProducts",&sumscalprod,"SumScalarProducts/F");
 
 
    Float_t sx,sy,st,st2,sxt,syt,dx,dy,delta;
