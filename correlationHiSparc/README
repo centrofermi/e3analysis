@@ -1,0 +1,108 @@
+Prepared by F. Noferini
+
+myset.tcsh and env.sh
+to load the environment variables at CNAF
+> scl enable devtoolset-6 python27 bash
+> source myset.tcsh
+> source env.sh
+
+1) script.py
+python script to downlaod hisparc data and to format then for correlation with EEE data.
+So far it is tuned only for one cluster of hisparc stations
+STATIONS = [501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 521, 522]
+
+Run it with:
+> python script.py YEAR MONTH DAY
+It collects HISPARC data, selects events with at least 3 station in coincidences and writes a ROOT tree
+
+One day test
+> python script.py 2016 11 1
+40 seconds
+
+Output Tree structure
+root [0] 
+Attaching file hisparc500-2016-11-01.root as _file0...
+(TFile *) 0x16efb70
+root [1] _file0->ls()
+TFile**		hisparc500-2016-11-01.root	
+ TFile*		hisparc500-2016-11-01.root	
+  KEY: TTree	t1;1	tree with histos
+root [2] t1->Print()
+******************************************************************************
+*Tree    :t1        : tree with histos                                       *
+*Entries :     2715 : Total =          132565 bytes  File  Size =      53520 *
+*        :          : Tree compression factor =   2.46                       *
+******************************************************************************
+*Br    0 :Seconds   : Seconds/I                                              * -> Timestamp in EEE reference (1 Jan 2007) -> sec[0]-=1167609600
+*Entries :     2715 : Total  Size=      11414 bytes  File Size  =       5688 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.92     *
+*............................................................................*
+*Br    1 :NanoSeconds : NanoSeconds/I                                        *
+*Entries :     2715 : Total  Size=      11434 bytes  File Size  =      10851 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.01     *
+*............................................................................*
+*Br    2 :NumStations : NumStations/I                                        * -> Num of stations in coincidence
+*Entries :     2715 : Total  Size=      11434 bytes  File Size  =       1392 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   7.86     *
+*............................................................................*
+*Br    3 :IndexStation : IndexStation[NumStations]/I                         * -> Indexes of the stations contributing to the event
+*Entries :     2715 : Total  Size=      49040 bytes  File Size  =      13159 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   3.68     *
+*............................................................................*
+*Br    4 :TimeStation : TimeStation[NumStations]/F                           * -> Station relative time w.r.t. the timestamp
+*Entries :     2715 : Total  Size=      49041 bytes  File Size  =      21615 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.24     *
+*............................................................................*
+
+Requirements
+Somewhat late but here some information about HiSPARC. To install the software simply use: "pip install hisparc-sapphire"
+
+A short tutorial can be found here: https://docs.hisparc.nl/sapphire/tutorial.html More information including the SAPPHiRE Reference here: https://docs.hisparc.nl/sapphire/
+
+Our notebooks can be found here: https://docs.hisparc.nl/infopakket/ (mostly Dutch)
+
+We use the HDF5 file format for our data, personally I like the HDFView program to quickly inspect the files: https://support.hdfgroup.org/products/java/hdfview/
+
+2) To produce an output to be processed with our LD correlation code run mkday.C macro
+> root mkday.C\(\"2016-11-01\"\)
+This allows to apply some reconstruction steps, the output is
+root [0] 
+Attaching file HS-0500-2016-11-01.root as _file0...
+(TFile *) 0x2546b30
+root [1] _file0->ls()
+TFile**		HS-0500-2016-11-01.root	
+ TFile*		HS-0500-2016-11-01.root	
+  KEY: TTree	cosmics;1	cosmics
+root [2] cosmics->Print()
+******************************************************************************
+*Tree    :cosmics   : cosmics                                                *
+*Entries :     2715 : Total =           79734 bytes  File  Size =      21914 *
+*        :          : Tree compression factor =   3.61                       *
+******************************************************************************
+*Br    0 :Seconds   : Seconds/I                                              *
+*Entries :     2715 : Total  Size=      11419 bytes  File Size  =       5693 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.92     *
+*............................................................................*
+*Br    1 :Nanoseconds : Nanoseconds/L                                        *
+*Entries :     2715 : Total  Size=      22307 bytes  File Size  =      13659 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   1.60     *
+*............................................................................*
+*Br    2 :Ntracks   : Ntracks/I                                              * -> Here it means the number of stations
+*Entries :     2715 : Total  Size=      11419 bytes  File Size  =       1393 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=   7.85     *
+*............................................................................*
+*Br    3 :XDir      : XDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+*Br    4 :YDir      : YDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+*Br    5 :ZDir      : ZDir/F                                                 *
+*Entries :     2715 : Total  Size=      11404 bytes  File Size  =        154 *
+*Baskets :        1 : Basket Size=      32000 bytes  Compression=  71.00     *
+*............................................................................*
+
+
+

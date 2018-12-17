@@ -13,29 +13,29 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 2000; // in ns (cut signal and background)
+Float_t windowAlignment = 300; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 200;
+const Int_t nbint = 2000;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
-const Float_t maxwidth = 400;
+const Float_t maxwidth = 200;
 
 // (2)
 // periods
 Int_t yearRange[2] = {2017,2017};
-Int_t monthRange[2] = {2,6};
+Int_t monthRange[2] = {1,6};
 Int_t dayRange[2] = {1,30};
 
-// Int_t yearRange[2] = {2014,2016};
-// Int_t monthRange[2] = {10,6};
-// Int_t dayRange[2] = {1,30};
+// Int_t yearRange[2] = {2016,2016};
+// Int_t monthRange[2] = {10,10};
+// Int_t dayRange[2] = {26,27};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
-Float_t fracGT[2] = {0.8,0.8};
-Float_t rateMin[2] = {10,10};
+Float_t fracGT[2] = {0.9,0.6};
+Float_t rateMin[2] = {30,30};
 Float_t rateMax[2] = {70,70};
 
 // old cut on the missing rate (replaced by the number of dead strips)
@@ -49,6 +49,7 @@ Int_t ndeadMidMax[2] = {23,23};
 Int_t ndeadMidMin[2] = {0,0};
 Int_t ndeadTopMax[2] = {23,23};
 Int_t ndeadTopMin[2] = {0,0};
+
 
 // requirement on the number of satellites in the run (average)
 Float_t minAvSat[2] = {4.,4.};
@@ -70,16 +71,16 @@ Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = 72.1926821864; //deg
-Float_t distance=520;
+Float_t angle = -134.8+26.4; //deg
+Float_t distance=15;
 
-Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = -260; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 100; // in degrees
+Float_t phi1Corr = 105-32; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 255; // in degrees
 
-void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
+void doCoincCERN_01_02new(const char *fileIn="coincCERN_0102n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -224,8 +225,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 	if(tel[i]->GetLeaf("OutdoorTemperature")) TempOutTel[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("OutdoorTemperature")->GetValue();
 	if(tel[i]->GetLeaf("TimeWeatherUpdate")) timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = tel[i]->GetLeaf("TimeWeatherUpdate")->GetValue();
 
-	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]){
-	  hRunCut[i]->Fill("NoGoodWeather",1); continue;}
+	if(timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] < minWeathTimeDelay[i] ||  timeWeath[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] > maxWeathTimeDelay[i]){ hRunCut[i]->Fill("NoGoodWeather",1); continue;	}
 
 	// Set good runs
 	runstatus[i][Int_t(tel[i]->GetLeaf("year")->GetValue())-2014][Int_t(tel[i]->GetLeaf("month")->GetValue())][Int_t(tel[i]->GetLeaf("day")->GetValue())][Int_t(tel[i]->GetLeaf("run")->GetValue())] = kTRUE;
@@ -238,7 +238,6 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   }
   printf("Start to process correlations\n");
   Int_t n = t->GetEntries();
-
   // counter for seconds
   Int_t nsec = 0;
   Int_t nsecGR = 0; // for good runs
@@ -540,7 +539,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputCAGL-01-02.root","RECREATE");
+  TFile *fo = new TFile("outputCERN-01-02.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

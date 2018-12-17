@@ -13,24 +13,21 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 2000; // in ns (cut signal and background)
+Float_t windowAlignment = 1000; // in ns (cut signal and background)
+Float_t windowAlignment2 = 10000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 200;
+const Int_t nbint = 100;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2017,2017};
-Int_t monthRange[2] = {2,6};
-Int_t dayRange[2] = {1,30};
-
-// Int_t yearRange[2] = {2014,2016};
-// Int_t monthRange[2] = {10,6};
-// Int_t dayRange[2] = {1,30};
+Int_t yearRange[2] = {2014,2017};
+Int_t monthRange[2] = {11,12};
+Int_t dayRange[2] = {1,1};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -51,7 +48,7 @@ Int_t ndeadTopMax[2] = {23,23};
 Int_t ndeadTopMin[2] = {0,0};
 
 // requirement on the number of satellites in the run (average)
-Float_t minAvSat[2] = {4.,4.};
+Float_t minAvSat[2] = {0.,0.};
 Float_t maxAvSat[2] = {10,10};
 
 // time difference between weather info and the start of the run (it is negative!) allowed (in seconds)
@@ -70,16 +67,16 @@ Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = 72.1926821864; //deg
-Float_t distance=520;
+Float_t angle = 85.75; //deg
+Float_t distance=1075;
 
-Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 100; // in degrees
+Float_t phi1Corr = 27; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 297; // in degrees
 
-void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
+void doCoincTORI_03_04new(const char *fileIn="coincTORI_0304n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -157,7 +154,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   Int_t nStripDeadTop[2][nyearmax][12][31][500];
 
   Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
-
+ 
   // sat info
   Float_t NsatAv[2][nyearmax][12][31][500];
 
@@ -417,9 +414,9 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     // }
 
     if(thetarel < 10){//cos(thetarel*TMath::DegToRad())>0.98 && sin(thetaAv)>0.1){
-      if(TMath::Abs(DeltaT- corr) < windowAlignment)
+      if(TMath::Abs(DeltaT- corr) < windowAlignment2)
 	hModulationAvCorr->Fill(phirelativeAv,DeltaT-corr);
-      if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment){
+      if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment2){
 	hModulation->Fill(phirelative,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
 	hModulation2->Fill(phirelative2,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
 	hModulationAv->Fill(phirelativeAv,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
@@ -428,7 +425,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 	nsigPeak++;
 	hnsigpeak->Fill(phirelativeAv);
       }
-      else if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment*10){
+      else if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment2*10){
 	nbackPeak++;
 	hnbackpeak->Fill(phirelativeAv);
       }
@@ -462,10 +459,10 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   TF1 *fpol0 = new TF1("fpol0","pol0");
   hnsigpeak->Fit(fpol0);
 
-  hModulation->Scale(fpol0->GetParameter(0));
-  hModulation2->Scale(fpol0->GetParameter(0));
-  hModulationAv->Scale(fpol0->GetParameter(0));
-  hModulationAvCorr->Scale(fpol0->GetParameter(0));
+  if(fpol0->GetParameter(0) > 0) hModulation->Scale(fpol0->GetParameter(0));
+  if(fpol0->GetParameter(0) > 0) hModulation2->Scale(fpol0->GetParameter(0));
+  if(fpol0->GetParameter(0) > 0) hModulationAv->Scale(fpol0->GetParameter(0));
+  if(fpol0->GetParameter(0) > 0) hModulationAvCorr->Scale(fpol0->GetParameter(0));
   
   TF1 *fmod = new TF1("fmod","[0] + [1]*cos((x-[2])*TMath::DegToRad())"); 
   hModulationAv->Fit(fmod); 
@@ -496,7 +493,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   ff->SetParName(4,"bin width");
   ff->SetParameter(0,42369);
   ff->SetParameter(1,0);
-  ff->SetParLimits(2,10,maxwidth);
+  ff->SetParLimits(2,200,maxwidth);
   ff->SetParameter(2,350); // fix witdh if needed
   ff->SetParameter(3,319);
   ff->FixParameter(4,(tmax-tmin)/nbint); // bin width
@@ -540,7 +537,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputCAGL-01-02.root","RECREATE");
+  TFile *fo = new TFile("outputTORI-03-04.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

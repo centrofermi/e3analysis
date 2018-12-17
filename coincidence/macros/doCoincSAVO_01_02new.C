@@ -13,24 +13,21 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 2000; // in ns (cut signal and background)
+Float_t windowAlignment = 1000; // in ns (cut signal and background)
+Float_t windowAlignment2 = 10000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
-const Int_t nbint = 200;
+const Int_t nbint = 100;
 const Float_t tmin = -10000; //ns
 const Float_t tmax = 10000; //ns
 const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2017,2017};
-Int_t monthRange[2] = {2,6};
-Int_t dayRange[2] = {1,30};
-
-// Int_t yearRange[2] = {2014,2016};
-// Int_t monthRange[2] = {10,6};
-// Int_t dayRange[2] = {1,30};
+Int_t yearRange[2] = {2014,2017};
+Int_t monthRange[2] = {11,6};
+Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -70,16 +67,16 @@ Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = 72.1926821864; //deg
-Float_t distance=520;
+Float_t angle = -18.9; //deg
+Float_t distance=1182;
 
-Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 100; // in degrees
+Float_t phi1Corr = 56; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 170; // in degrees
 
-void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
+void doCoincSAVO_01_02new(const char *fileIn="coincSAVO_0102n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -417,9 +414,9 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
     // }
 
     if(thetarel < 10){//cos(thetarel*TMath::DegToRad())>0.98 && sin(thetaAv)>0.1){
-      if(TMath::Abs(DeltaT- corr) < windowAlignment)
+      if(TMath::Abs(DeltaT- corr) < windowAlignment2)
 	hModulationAvCorr->Fill(phirelativeAv,DeltaT-corr);
-      if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment){
+      if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment2){
 	hModulation->Fill(phirelative,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
 	hModulation2->Fill(phirelative2,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
 	hModulationAv->Fill(phirelativeAv,(DeltaT-deltatCorr)/sin(thetaAv)*2.99792458000000039e-01);
@@ -428,7 +425,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 	nsigPeak++;
 	hnsigpeak->Fill(phirelativeAv);
       }
-      else if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment*10){
+      else if(TMath::Abs(DeltaT- deltatCorr) < windowAlignment2*10){
 	nbackPeak++;
 	hnbackpeak->Fill(phirelativeAv);
       }
@@ -540,7 +537,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputCAGL-01-02.root","RECREATE");
+  TFile *fo = new TFile("outputSAVO-01-02.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

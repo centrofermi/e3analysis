@@ -13,7 +13,7 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 2000; // in ns (cut signal and background)
+Float_t windowAlignment = 1000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
@@ -24,13 +24,9 @@ const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2017,2017};
-Int_t monthRange[2] = {2,6};
-Int_t dayRange[2] = {1,30};
-
-// Int_t yearRange[2] = {2014,2016};
-// Int_t monthRange[2] = {10,6};
-// Int_t dayRange[2] = {1,30};
+Int_t yearRange[2] = {2016,2017};
+Int_t monthRange[2] = {4,12};
+Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -63,23 +59,23 @@ Float_t refRate[2] = {23,23};
 
 // (3)
 // thresholds for good events
-Float_t maxchisquare = 10*10/2;
+Float_t maxchisquare = 10*10/2*2*2*2*2;
 Float_t minthetarel = 0;
 Float_t maxthetarel = 60;
 Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = 72.1926821864; //deg
-Float_t distance=520;
+Float_t angle = -106.78; //deg
+Float_t distance=167;
 
-Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = 0; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 100; // in degrees
+Float_t phi1Corr = 250.0; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 0; // in degrees
 
-void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
+void doCoincLODI_01_02new(const char *fileIn="coincLODI_0102n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -155,8 +151,6 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   Int_t nStripDeadBot[2][nyearmax][12][31][500];
   Int_t nStripDeadMid[2][nyearmax][12][31][500];
   Int_t nStripDeadTop[2][nyearmax][12][31][500];
-
-  Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
 
   // sat info
   Float_t NsatAv[2][nyearmax][12][31][500];
@@ -261,24 +255,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
       if(!runstatus[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run2")->GetValue())]) continue;
       
       nsecGR += telC->GetLeaf("timeduration")->GetValue(); 
-      nstripDeadB[0] += countBits(nStripDeadBot[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
-      nstripDeadM[0] += countBits(nStripDeadMid[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
-      nstripDeadT[0] += countBits(nStripDeadTop[0][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
-
-      nstripDeadB[1] += countBits(nStripDeadBot[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
-      nstripDeadM[1] += countBits(nStripDeadMid[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
-      nstripDeadT[1] += countBits(nStripDeadTop[1][Int_t(telC->GetLeaf("year")->GetValue())-2014][Int_t(telC->GetLeaf("month")->GetValue())][Int_t(telC->GetLeaf("day")->GetValue())][Int_t(telC->GetLeaf("run")->GetValue())])*telC->GetLeaf("timeduration")->GetValue();
     }
-    nstripDeadB[0] /= nsecGR;
-    nstripDeadM[0] /= nsecGR;
-    nstripDeadT[0] /= nsecGR;
-
-    nstripDeadB[1] /= nsecGR;
-    nstripDeadM[1] /= nsecGR;
-    nstripDeadT[1] /= nsecGR;
-
-    printf("Dead channel tel1 = %f - %f - %f\n",nstripDeadB[0],nstripDeadM[0],nstripDeadT[0]);
-    printf("Dead channel tel2 = %f - %f - %f\n",nstripDeadB[1],nstripDeadM[1],nstripDeadT[1]);
   }
   
   char title[300];
@@ -540,7 +517,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputCAGL-01-02.root","RECREATE");
+  TFile *fo = new TFile("outputLODI-01-02.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();

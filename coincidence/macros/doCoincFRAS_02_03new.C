@@ -13,7 +13,7 @@
 
 Int_t countBits(Int_t word);
 
-Float_t windowAlignment = 2000; // in ns (cut signal and background)
+Float_t windowAlignment = 1000; // in ns (cut signal and background)
 
 // (1)
 // setting for histos
@@ -24,13 +24,9 @@ const Float_t maxwidth = 400;
 
 // (2)
 // periods
-Int_t yearRange[2] = {2017,2017};
-Int_t monthRange[2] = {2,6};
-Int_t dayRange[2] = {1,30};
-
-// Int_t yearRange[2] = {2014,2016};
-// Int_t monthRange[2] = {10,6};
-// Int_t dayRange[2] = {1,30};
+Int_t yearRange[2] = {2015,2016};
+Int_t monthRange[2] = {11,6};
+Int_t dayRange[2] = {1,31};
 
 // thresholds for good runs
 Int_t hitevents[2] = {10000,10000};
@@ -49,6 +45,8 @@ Int_t ndeadMidMax[2] = {23,23};
 Int_t ndeadMidMin[2] = {0,0};
 Int_t ndeadTopMax[2] = {23,23};
 Int_t ndeadTopMin[2] = {0,0};
+
+Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
 
 // requirement on the number of satellites in the run (average)
 Float_t minAvSat[2] = {4.,4.};
@@ -70,16 +68,16 @@ Int_t satEventThr = 0; // minimum number of sattellite required in each event
 
 // (4)
 // telescope settings
-Float_t angle = 72.1926821864; //deg
-Float_t distance=520;
+Float_t angle = -124.5; //deg
+Float_t distance=627;
 
-Float_t deltatCorr = -250; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
+Float_t deltatCorr = -92; // knows shift in gps time difference for a given pair of telescopes (bolo ~ 1500)
 // extra corrections
 Bool_t recomputeThetaRel = kTRUE; // if true correction below are applied to adjust the phi angles of the telescopes
-Float_t phi1Corr = 236-3; // in degrees (the one stored in the header + refinements)
-Float_t phi2Corr = 100; // in degrees
+Float_t phi1Corr = 178; // in degrees (the one stored in the header + refinements)
+Float_t phi2Corr = 215; // in degrees
 
-void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
+void doCoincFRAS_02_03new(const char *fileIn="coincFRAS_0203n.root"){
 
   // Print settings
   printf("SETTINGS\nAnalyze output from new Analyzer\n");
@@ -155,8 +153,6 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
   Int_t nStripDeadBot[2][nyearmax][12][31][500];
   Int_t nStripDeadMid[2][nyearmax][12][31][500];
   Int_t nStripDeadTop[2][nyearmax][12][31][500];
-
-  Float_t nstripDeadB[2]={0,0},nstripDeadM[2]={0,0},nstripDeadT[2]={0,0};
 
   // sat info
   Float_t NsatAv[2][nyearmax][12][31][500];
@@ -540,7 +536,7 @@ void doCoincCAGL_01_02new(const char *fileIn="coincCAGL_0102n.root"){
 
   text->AddText(Form("rate = %f #pm %f per day",func1->GetParameter(0)*86400/nsecGR,func1->GetParError(0)*86400/nsecGR));
 
-  TFile *fo = new TFile("outputCAGL-01-02.root","RECREATE");
+  TFile *fo = new TFile("outputFRAS-02-03.root","RECREATE");
   h->Write();
   hDeltaTheta->Write();
   hDeltaPhi->Write();
