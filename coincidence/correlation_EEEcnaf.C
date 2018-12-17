@@ -37,6 +37,8 @@ bool CfrString(const char *str1,const char *str2);
 void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Float_t &phi);
 void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *mysc2=NULL,const char *mypath=NULL,bool kNoConfigFile=kFALSE,Double_t delay1=0,Double_t delay2=0,Double_t DiffCut = 0.1,Double_t corrWindow=1E-4,Bool_t isMC=kFALSE);
 
+bool addBottomPos=0;
+
 int main(int argc,char *argv[]){
 
   printf("DEBUG\n");
@@ -63,6 +65,7 @@ int main(int argc,char *argv[]){
   printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
   printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
   printf("-mc = for mc simulations\n");
+  printf("-addhitpos = add hit position in bottom chamber\n");
 
   int kNoConfigFile = 0;
 
@@ -99,6 +102,10 @@ int main(int argc,char *argv[]){
       i++;  
       kNoConfigFile++;
     }
+
+   if(CfrString(argv[i],"-addhitpos")){
+      addBottomPos=1;
+   }
 
    if(CfrString(argv[i],"-delay1")){
       if(i+1 > argc){
@@ -287,6 +294,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t DeltaTime1[24], DeltaTime2[24];
 	Double_t tweather1,tweather2;
 
+        Float_t xBot1[24],yBot1[24];
+       	Float_t	xBot2[24],yBot2[24];
+
         if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
         if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
         if(t1h->GetLeaf("DeadChMaskBot")) t1h->SetBranchAddress("DeadChMaskBot", &maskB1);
@@ -338,7 +348,12 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t2->SetBranchAddress("TrackLength", TrackLength2);
 	t2->SetBranchAddress("DeltaTime", DeltaTime2);
 //	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
-
+        if(addBottomPos){
+          t1->SetBranchAddress("PosXBot", xBot1);
+          t1->SetBranchAddress("PosYBot", yBot1);
+          t2->SetBranchAddress("PosXBot", xBot2);
+          t2->SetBranchAddress("PosYBot", yBot2);
+        }
 
 	Int_t nent1 = t1->GetEntries();
 	Int_t nent2 = t2->GetEntries();
@@ -637,6 +652,12 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
 	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
 	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
+      	if(addBottomPos){
+          treeout->Branch("PosXBot1", xBot1,"PosXBot1/F");
+          treeout->Branch("PosYBot1", yBot1,"PosYBot1/F");
+          treeout->Branch("PosXBot2", xBot2,"PosXBot2/F");
+          treeout->Branch("PosYBot2", yBot2,"PosYBot2/F");
+        }
 
 
 	for(e1 = 0; e1 < nent1; e1++) {
