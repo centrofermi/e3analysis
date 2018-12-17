@@ -332,6 +332,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	t2->SetBranchAddress("DeltaTime", DeltaTime2);
 //	t2->SetBranchAddress("UniqueRunId", &UniqueRunId2);
 
+
 	Int_t nent1 = t1->GetEntries();
 	Int_t nent2 = t2->GetEntries();
 
@@ -400,6 +401,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 // collect info on run duration and rate
        for(Int_t e1 = 0; e1 < nent1; e1++) {
                 t1->GetEntry(e1);
+                RunNumber1 = RunNumber1%500;
+
                 hexposure1->SetBinContent(hexposure1->FindBin(Seconds1-delay1-startTime),RunNumber1);
 
                 hAllPerRun1->Fill(RunNumber1);
@@ -412,6 +415,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
        for(Int_t e2 = 0; e2 < nent2; e2++) {
                 t2->GetEntry(e2);
+                RunNumber2 = RunNumber2%500;
                 hexposure2->SetBinContent(hexposure2->FindBin(Seconds2-delay2-startTime),RunNumber2);
 
                 hAllPerRun2->Fill(RunNumber2);
@@ -541,6 +545,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 		tweather1 -= t1h->GetLeaf("RunStart")->GetValue();;
                 treeTel1->Fill();
             }
+
             if(htimePerRun2->GetBinContent(i) > 0){
 	        t2h->GetEvent(n2run);
 	        t2w->GetEvent(n2run);
@@ -553,6 +558,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
    		tweather2 -= t2h->GetLeaf("RunStart")->GetValue();;
 		treeTel2->Fill();
             }
+
         }
 
         Int_t noverlap[500][500];
@@ -560,14 +566,11 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           for(Int_t js=0;js < 500;js++)
             noverlap[is][js]=0;
 
-
         // count overlapping seconds
         for(Int_t is=1;is<100000;is++){
           if(hexposure1->GetBinContent(is) > 0 && hexposure2->GetBinContent(is) > 0)
             noverlap[Int_t(hexposure1->GetBinContent(is))][Int_t(hexposure2->GetBinContent(is))]++;
         }
-
-
 
         for(Int_t i=1;i<500;i++){
               for(Int_t j=1;j<500;j++){
@@ -579,7 +582,6 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
                 }      
               }
         }
-        
 
 	TTree *treeout = new TTree("tree", "Delta T");
 	Int_t e1, e2;	
@@ -616,6 +618,8 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	for(e1 = 0; e1 < nent1; e1++) {
 		if (!(e1 % 10000)) cout << "\rCorrelating entry #" << e1 << flush;
 		t1->GetEntry(e1);
+	        RunNumber1 = RunNumber1%500;
+
                 if(StatusCode1) continue;
 
 		if(t1->GetLeaf("GpsID")) t1g->GetEntry(t1->GetLeaf("GpsID")->GetValue());
@@ -638,6 +642,7 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 				size = cell[cellIndex].GetSize();
 				e2 = cell[i].At(j);
 				t2->GetEntry(e2); 
+                                RunNumber2 = RunNumber2%500;
 
 				if(StatusCode2) continue;
 
