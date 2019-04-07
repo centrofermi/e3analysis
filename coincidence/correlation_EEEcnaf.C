@@ -310,6 +310,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         Float_t xBot1[24],yBot1[24];
        	Float_t	xBot2[24],yBot2[24];
 
+        Float_t xTop1[24],yTop1[24];
+        Float_t xTop2[24],yTop2[24];
+
         if(t1h->GetLeaf("nSatellites")) t1h->SetBranchAddress("nSatellites", &nsat1);
         if(t2h->GetLeaf("nSatellites")) t2h->SetBranchAddress("nSatellites", &nsat2);
         if(t1h->GetLeaf("DeadChMaskBot")) t1h->SetBranchAddress("DeadChMaskBot", &maskB1);
@@ -366,6 +369,15 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           t1->SetBranchAddress("PosYBot", yBot1);
           t2->SetBranchAddress("PosXBot", xBot2);
           t2->SetBranchAddress("PosYBot", yBot2);
+
+          if(t1->GetLeaf("PosXTop")){
+              t1->SetBranchAddress("PosXTop", xTop1);
+              t1->SetBranchAddress("PosYTop", yTop1);
+          }
+       	  if(t2->GetLeaf("PosXTop")){
+              t2->SetBranchAddress("PosXTop", xTop2);
+              t2->SetBranchAddress("PosYTop", yTop2);
+          }
         }
 
         if(isPolar1sc) t1->SetBranchAddress("rightChannelM",polar1RightMch);
@@ -689,6 +701,10 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           treeout->Branch("PosYBot1", yBot1,"PosYBot1/F");
           treeout->Branch("PosXBot2", xBot2,"PosXBot2/F");
           treeout->Branch("PosYBot2", yBot2,"PosYBot2/F");
+          treeout->Branch("PosXTop1", xTop1,"PosXTop1/F");
+          treeout->Branch("PosYTop1", yTop1,"PosYTop1/F");
+          treeout->Branch("PosXTop2", xTop2,"PosXTop2/F");
+       	  treeout->Branch("PosYTop2", yTop2,"PosYTop2/F");
         }
 
 
