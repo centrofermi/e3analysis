@@ -39,6 +39,9 @@ void correlation_EEE(const char *mydata=NULL,const char *mysc1=NULL,const char *
 
 bool addBottomPos=0;
 
+bool isPolar1sc=0;
+bool isPolar2sc=0;
+
 int main(int argc,char *argv[]){
 
   printf("DEBUG\n");
@@ -65,6 +68,7 @@ int main(int argc,char *argv[]){
   printf("-delay1 time_delay = time delay of telescope1 in seconds\n");
   printf("-delay2 time_delay = time delay of telescope2 in seconds\n");
   printf("-mc = for mc simulations\n");
+  printf("-polar1 or -polar2 = school1 or school2 are polar telescopes\n");
   printf("-addhitpos = add hit position in bottom chamber\n");
 
   int kNoConfigFile = 0;
@@ -148,6 +152,12 @@ int main(int argc,char *argv[]){
 
    if(CfrString(argv[i],"-mc")){
      isMC=kTRUE;
+   }
+   if(CfrString(argv[i],"-polar1")){
+     isPolar1sc=kTRUE;
+   }
+   if(CfrString(argv[i],"-polar2")){
+     isPolar2sc=kTRUE;
    }
 
   }
@@ -294,6 +304,9 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 	Float_t DeltaTime1[24], DeltaTime2[24];
 	Double_t tweather1,tweather2;
 
+        Int_t polar1LeftBch[4],polar1RightBch[4],polar1LeftMch[4],polar1RightMch[4];
+        Int_t polar2LeftBch[4],polar2RightBch[4],polar2LeftMch[4],polar2RightMch[4];
+
         Float_t xBot1[24],yBot1[24];
        	Float_t	xBot2[24],yBot2[24];
 
@@ -354,6 +367,15 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
           t2->SetBranchAddress("PosXBot", xBot2);
           t2->SetBranchAddress("PosYBot", yBot2);
         }
+
+        if(isPolar1sc) t1->SetBranchAddress("rightChannelM",polar1RightMch);
+     	if(isPolar1sc) t1->SetBranchAddress("leftChannelM",polar1LeftMch);
+       	if(isPolar1sc) t1->SetBranchAddress("rightChannelB",polar1RightBch);
+        if(isPolar1sc) t1->SetBranchAddress("leftChannelB",polar1LeftBch);
+       	if(isPolar2sc) t2->SetBranchAddress("rightChannelM",polar2RightMch);
+        if(isPolar2sc) t2->SetBranchAddress("leftChannelM",polar2LeftMch);
+        if(isPolar2sc) t2->SetBranchAddress("rightChannelB",polar2RightBch);
+        if(isPolar2sc) t2->SetBranchAddress("leftChannelB",polar2LeftBch);
 
 	Int_t nent1 = t1->GetEntries();
 	Int_t nent2 = t2->GetEntries();
@@ -650,6 +672,16 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
         if(t2->GetLeaf("Ntracks")) treeout->Branch("Ntracks2", &ntracks2,"Ntracks2/I");
  	treeout->Branch("Nsatellite2", &nsat2gps,"Nsatellite2/I");
 
+        if(isPolar1sc) treeout->Branch("polar1leftB",polar1LeftBch,"polar1leftB/I");
+        if(isPolar1sc) treeout->Branch("polar1leftM",polar1LeftMch,"polar1leftM/I");
+        if(isPolar1sc) treeout->Branch("polar1rightB",polar1RightBch,"polar1rightB/I");
+        if(isPolar1sc) treeout->Branch("polar1rightM",polar1RightMch,"polar1rightM/I");
+        if(isPolar2sc) treeout->Branch("polar2leftB",polar2LeftBch,"polar2leftB/I");
+        if(isPolar2sc) treeout->Branch("polar2leftM",polar2LeftMch,"polar2leftM/I");
+        if(isPolar2sc) treeout->Branch("polar2rightB",polar2RightBch,"polar2rightB/I");
+        if(isPolar2sc) treeout->Branch("polar2rightM",polar2RightMch,"polar2rightM/I");
+
+
 	treeout->Branch("DiffTime", &DiffTime, "DiffTime/D");
 	treeout->Branch("ThetaRel", &ThetaRel, "ThetaRel/F");
       	if(addBottomPos){
@@ -710,6 +742,20 @@ void correlation_EEE(const char *mydata,const char *mysc1,const char *mysc2,cons
 
                                 if(StatusCode1) ChiSquare1[0] = 1000;
                                 if(StatusCode2) ChiSquare2[0] = 1000;
+
+
+                                if(isPolar1sc){
+                                  if(TMath::Abs(t1->GetLeaf("timeMR")->GetValue() + 1050) > 150 || ntracks1 < 1) polar1RightMch[0] = -1;
+                                  if(TMath::Abs(t1->GetLeaf("timeML")->GetValue() + 1050) > 150 || ntracks1 < 1) polar1LeftMch[0] = -1;
+                                  if(TMath::Abs(t1->GetLeaf("timeBR")->GetValue() + 1050) > 150 || ntracks1 < 1) polar1RightBch[0] = -1;
+                                  if(TMath::Abs(t1->GetLeaf("timeBL")->GetValue() + 1050) > 150 || ntracks1 < 1) polar1LeftBch[0] = -1;
+                                }
+                                if(isPolar2sc){
+                                  if(TMath::Abs(t2->GetLeaf("timeMR")->GetValue() + 1050) > 150 || ntracks2 < 1) polar2RightMch[0] = -1;
+                                  if(TMath::Abs(t2->GetLeaf("timeML")->GetValue() + 1050) > 150 || ntracks2 < 1) polar2LeftMch[0] = -1;
+                                  if(TMath::Abs(t2->GetLeaf("timeBR")->GetValue() + 1050) > 150 || ntracks2 < 1) polar2RightBch[0] = -1;
+                                  if(TMath::Abs(t2->GetLeaf("timeBL")->GetValue() + 1050) > 150 || ntracks2 < 1) polar2LeftBch[0] = -1;
+                                }
 
 				if(TMath::Abs(DiffTime) <= corrWindow && StatusCode1 == 0 && StatusCode2 == 0) treeout->Fill();
 			}
