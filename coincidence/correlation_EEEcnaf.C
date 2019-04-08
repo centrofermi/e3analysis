@@ -802,7 +802,7 @@ void CalculateThetaPhi(Float_t &cx, Float_t &cy, Float_t &cz, Float_t &teta, Flo
 	if(cx<0)          phi=phi+180.0;
 	if(cx>0 & cy<0)   phi=360.0+phi;
 
-	Double_t deltaphi=gRandom->Gaus(0.0,4.0);
+	Double_t deltaphi=0;//gRandom->Gaus(0.0,4.0);
 	phi=phi+deltaphi;
 	if(phi<0.)   phi=360+phi;
 	if(phi>360.) phi=phi-360.0;
